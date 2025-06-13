@@ -2,7 +2,7 @@ import { EngineResponse, NodeWithScore } from "llamaindex";
 import { Metadata } from "next";
 import { Reranker } from "../Reranker";
 import { ResponseGeneratorBase, Source } from "../ResponseGeneratorBase";
-import { DecisionResult, QueryAnalyzer } from "./query-analyzer";
+import { QueryAnalyzer } from "./query-analyzer";
 import { RagQueryEngine } from "./rag-query-engine";
 
 // Enhanced interfaces from the plan
@@ -24,7 +24,7 @@ interface EnhancedRagResult {
   stream: AsyncIterable<EngineResponse>;
   sources: Source[];
   nodes: NodeWithScore[];
-  analysisResult: DecisionResult;
+  analysisResult: "context-only" | "hybrid" | "new-search";
 }
 
 export class EnhancedRAGEngine {
@@ -55,20 +55,17 @@ export class EnhancedRAGEngine {
       previousContext,
     });
 
-    const analysisResult = this.queryAnalyzer.makeDecision(
+    const decision = this.queryAnalyzer.makeDecision(
       queryAnalysis,
       contextAnalysisThreshold
     );
 
-    console.log(
-      `Enhanced RAG: Decision: ${analysisResult.decision}, Confidence: ${analysisResult.confidence}`
-    );
+    console.log(`Enhanced RAG: Decision: ${decision}`);
 
     let finalNodes: NodeWithScore[];
     let sources: Source[];
 
-    console.dir(analysisResult, { depth: null });
-    switch (analysisResult.decision) {
+    switch (decision) {
       case "context-only":
         finalNodes = this.extractNodesFromContext(
           previousContext,
@@ -112,7 +109,7 @@ export class EnhancedRAGEngine {
         break;
 
       default:
-        throw new Error(`Unknown decision: ${analysisResult.decision}`);
+        throw new Error(`Unknown decision: ${decision}`);
     }
 
     // Generate streaming response with enhanced context
@@ -122,14 +119,14 @@ export class EnhancedRAGEngine {
     });
 
     console.log(
-      `Enhanced RAG completed: Used ${finalNodes.length} nodes via ${analysisResult.decision} strategy`
+      `Enhanced RAG completed: Used ${finalNodes.length} nodes via ${decision} strategy`
     );
 
     return {
       stream,
       sources,
       nodes: finalNodes,
-      analysisResult,
+      analysisResult: decision,
     };
   }
   /**

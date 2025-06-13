@@ -18,14 +18,6 @@ export interface QueryAnalysisOutput {
   contextRelevance: number;
   missingInformation: string[];
   queryType: "clarification" | "follow-up" | "new-topic" | "elaboration";
-  confidence: number;
-  reasoning: string;
-}
-
-export interface DecisionResult {
-  decision: "context-only" | "hybrid" | "new-search";
-  confidence: number;
-  reasoning: string;
 }
 
 // Zod schema for AI analysis
@@ -86,8 +78,6 @@ export class QueryAnalyzer {
         contextRelevance: aiAnalysis.contextRelevance,
         missingInformation: aiAnalysis.missingInformation,
         queryType: aiAnalysis.queryType,
-        confidence: aiAnalysis.confidence,
-        reasoning: aiAnalysis.reasoning,
       };
     } catch (error) {
       console.warn(
@@ -104,48 +94,21 @@ export class QueryAnalyzer {
   makeDecision(
     analysis: QueryAnalysisOutput,
     contextAnalysisThreshold: number = 0.7
-  ): DecisionResult {
-    const {
-      contextRelevance,
-      requiresNewSearch,
-      isFollowUp,
-      confidence,
-      reasoning,
-    } = analysis;
-
-    let decision: "context-only" | "hybrid" | "new-search";
-    let finalConfidence = confidence;
-    let finalReasoning = reasoning;
+  ) {
+    const { contextRelevance, requiresNewSearch, isFollowUp } = analysis;
 
     // AI-informed decision logic
     if (!requiresNewSearch && contextRelevance >= contextAnalysisThreshold) {
-      decision = "context-only";
-      finalConfidence = Math.min(confidence + 0.1, 1.0);
-      finalReasoning = `AI Analysis: ${reasoning}. High context relevance (${contextRelevance.toFixed(
-        2
-      )}) suggests context is sufficient.`;
+      return "context-only";
     } else if (
       isFollowUp &&
       contextRelevance >= 0.3 &&
       contextRelevance < contextAnalysisThreshold
     ) {
-      decision = "hybrid";
-      finalReasoning = `AI Analysis: ${reasoning}. Moderate context relevance (${contextRelevance.toFixed(
-        2
-      )}) requires hybrid approach.`;
+      return "hybrid";
     } else {
-      decision = "new-search";
-      finalConfidence = Math.max(confidence, 0.8);
-      finalReasoning = `AI Analysis: ${reasoning}. Low context relevance (${contextRelevance.toFixed(
-        2
-      )}) or new topic requires fresh search.`;
+      return "new-search";
     }
-
-    return {
-      decision,
-      confidence: finalConfidence,
-      reasoning: finalReasoning,
-    };
   }
 
   /**

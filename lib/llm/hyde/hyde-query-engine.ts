@@ -1,18 +1,13 @@
 import { NodeWithScore, VectorIndexRetriever } from "llamaindex";
-import { HyDEQueryTransformer } from "./HyDEQueryTransformer";
+import { HyDEQueryTransformer } from "./hyde-query-transformer";
 
 interface QueryResult {
   nodes: NodeWithScore[];
   originalQuery: string;
   hypotheticalDocument: string;
-  rerankingInfo?: {
-    originalCount: number;
-    rerankedCount: number;
-    strategy: string;
-  };
 }
 
-export class QueryEngine {
+export class HyDEQueryEngine {
   constructor(
     private retriever: (topK: number) => VectorIndexRetriever,
     private hydeTransformer: HyDEQueryTransformer

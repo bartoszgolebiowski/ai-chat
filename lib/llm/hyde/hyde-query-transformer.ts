@@ -1,7 +1,7 @@
+import { EmbeddingModel } from "@/lib/models/embedded";
+import { LLM } from "@/lib/models/llm";
+import { FileCache } from "@/lib/utils/cache";
 import { embed, generateText } from "ai";
-import { EmbeddingModel } from "../models/embedded";
-import { LLM } from "../models/llm";
-import { FileCache } from "../utils/cache";
 
 interface HyDEOptions {
   maxTokens?: number;
@@ -39,10 +39,7 @@ export class HyDEQueryTransformer {
     // Try to get from cache first
     const cachedResult = await this.cache.get(cacheKey);
     if (cachedResult) {
-      console.log(
-        "HyDE cache hit for query:",
-        query.substring(0, 50) + "..."
-      );
+      console.log("HyDE cache hit for query:", query.substring(0, 50) + "...");
       return cachedResult;
     }
 
@@ -82,13 +79,6 @@ export class HyDEQueryTransformer {
     };
 
     return `${query}|${JSON.stringify(normalizedOptions)}`;
-  }
-
-  /**
-   * Clear the cache
-   */
-  async clearCache(): Promise<void> {
-    await this.cache.clear();
   }
 
   /**

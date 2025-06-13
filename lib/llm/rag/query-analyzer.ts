@@ -216,9 +216,8 @@ Podaj szczegółowe uzasadnienie swojej analizy.`;
       return "No previous context available.";
     }
 
-    const summaries = previousContext.slice(-3).map((context, index) => {
+    const summaries = previousContext.map((context, index) => {
       const nodeContents = context.nodes
-        .slice(0, 2) // Only include top 2 nodes for brevity
         .map((node) => {
           // Safely get text content from node
           let text = "Content not available";

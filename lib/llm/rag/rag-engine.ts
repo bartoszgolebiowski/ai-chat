@@ -2,11 +2,11 @@ import { EngineResponse, NodeWithScore } from "llamaindex";
 import { Metadata } from "next";
 import { Reranker } from "../Reranker";
 import { ResponseGeneratorBase, Source } from "../ResponseGeneratorBase";
-import { HyDEQueryEngine } from "./hyde-query-engine";
 import { DecisionResult, QueryAnalyzer } from "./query-analyzer";
+import { RagQueryEngine } from "./rag-query-engine";
 
 // Enhanced interfaces from the plan
-interface EnhancedHyDERagOptions {
+interface EnhancedRagOptions {
   retrievalTopK?: number;
   rerankTopK?: number;
   rerankStrategy?: "semantic" | "hybrid";
@@ -20,28 +20,25 @@ interface EnhancedHyDERagOptions {
   }[];
 }
 
-interface EnhancedHyDERagResult {
+interface EnhancedRagResult {
   stream: AsyncIterable<EngineResponse>;
   sources: Source[];
   nodes: NodeWithScore[];
   analysisResult: DecisionResult;
 }
 
-export class EnhancedHyDERAGEngine {
+export class EnhancedRAGEngine {
   constructor(
-    private hydeQueryEngine: HyDEQueryEngine,
+    private queryEngine: RagQueryEngine,
     private reranker: Reranker,
     private responseGenerator: ResponseGeneratorBase,
     private queryAnalyzer: QueryAnalyzer
   ) {}
 
-  /**
-   * Execute enhanced HyDE-RAG pipeline with intelligent context analysis
-   */
   async execute(
     query: string,
-    options: EnhancedHyDERagOptions = {}
-  ): Promise<EnhancedHyDERagResult> {
+    options: EnhancedRagOptions = {}
+  ): Promise<EnhancedRagResult> {
     const {
       retrievalTopK = 10,
       rerankTopK = 5,
@@ -64,7 +61,7 @@ export class EnhancedHyDERAGEngine {
     );
 
     console.log(
-      `Enhanced HyDE RAG: Decision: ${analysisResult.decision}, Confidence: ${analysisResult.confidence}`
+      `Enhanced RAG: Decision: ${analysisResult.decision}, Confidence: ${analysisResult.confidence}`
     );
 
     let finalNodes: NodeWithScore[];
@@ -125,7 +122,7 @@ export class EnhancedHyDERAGEngine {
     });
 
     console.log(
-      `Enhanced HyDE RAG completed: Used ${finalNodes.length} nodes via ${analysisResult.decision} strategy`
+      `Enhanced RAG completed: Used ${finalNodes.length} nodes via ${analysisResult.decision} strategy`
     );
 
     return {
@@ -139,7 +136,7 @@ export class EnhancedHyDERAGEngine {
    * Extract nodes from previous context
    */
   private extractNodesFromContext(
-    previousContext: EnhancedHyDERagOptions["previousContext"] = [],
+    previousContext: EnhancedRagOptions["previousContext"] = [],
     maxNodes: number
   ): NodeWithScore[] {
     const allNodes: NodeWithScore[] = [];
@@ -161,7 +158,7 @@ export class EnhancedHyDERAGEngine {
     query: string,
     topK: number
   ): Promise<NodeWithScore[]> {
-    const queryResult = await this.hydeQueryEngine.query(query, topK);
+    const queryResult = await this.queryEngine.query(query, topK);
     return queryResult.nodes;
   }
 

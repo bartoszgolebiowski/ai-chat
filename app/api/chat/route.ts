@@ -1,5 +1,5 @@
 import { conversationMemoryCache } from "@/lib/cache/conversation-memory-cache";
-import { hydeRagEngineEnhanced } from "@/lib/clients/hyde/hyde-rag-engine-enhanced";
+import { ragEngineEnhanced } from "@/lib/clients/rag/rag-engine-enhanced";
 import { createDataStreamResponse, LlamaIndexAdapter, UIMessage } from "ai";
 
 // Allow streaming responses up to 30 seconds
@@ -23,8 +23,7 @@ export async function POST(req: Request) {
       // Get conversation history from cache
       const conversationHistory = conversationMemoryCache.getConversation(id);
 
-      // Execute complete HyDE-enhanced RAG pipeline
-      const ragResult = await hydeRagEngineEnhanced.execute(userQuery, {
+      const ragResult = await ragEngineEnhanced.execute(userQuery, {
         retrievalTopK: 10,
         rerankTopK: 5,
         rerankStrategy: "hybrid",

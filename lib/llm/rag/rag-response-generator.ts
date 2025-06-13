@@ -1,7 +1,7 @@
 import { MetadataMode, SimpleChatEngine } from "llamaindex";
 import { ResponseGeneratorBase } from "../ResponseGeneratorBase";
 
-export class HyDEResponseGenerator extends ResponseGeneratorBase {
+export class ResponseGenerator extends ResponseGeneratorBase {
   private static readonly SYSTEM_PROMPT = `
 Jesteś asystentem, który odpowiada na pytania na podstawie dostarczonych dokumentów. 
 
@@ -46,7 +46,7 @@ Odpowiadaj krótko i rzeczowo w języku polskim.
    */
   protected buildContextualPrompt(query: string, documents: string[]): string {
     return `
-${HyDEResponseGenerator.SYSTEM_PROMPT}
+${ResponseGenerator.SYSTEM_PROMPT}
 
 <pytanie> 
 ${query}

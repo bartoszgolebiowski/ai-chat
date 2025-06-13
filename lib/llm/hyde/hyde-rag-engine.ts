@@ -1,4 +1,5 @@
-import { EngineResponse } from "llamaindex";
+import { EngineResponse, NodeWithScore } from "llamaindex";
+import { Metadata } from "next";
 import { Reranker } from "../Reranker";
 import { ResponseGeneratorBase, Source } from "../ResponseGeneratorBase";
 import { HyDEQueryEngine } from "./hyde-query-engine";
@@ -7,11 +8,17 @@ interface HyDERagOptions {
   retrievalTopK?: number;
   rerankTopK?: number;
   rerankStrategy?: "semantic" | "hybrid";
+  previousContext?: {
+    query: string;
+    response: string;
+    nodes: NodeWithScore<Metadata>[];
+  }[];
 }
 
 interface HyDERagResult {
   stream: AsyncIterable<EngineResponse>;
   sources: Source[];
+  nodes: NodeWithScore[];
 }
 
 export class HyDERAGEngine {
@@ -32,6 +39,7 @@ export class HyDERAGEngine {
       retrievalTopK = 10,
       rerankTopK = 5,
       rerankStrategy = "hybrid",
+      previousContext = [],
     } = options;
 
     // Step 1: Use enhanced query engine with HyDE
@@ -61,6 +69,7 @@ export class HyDERAGEngine {
     return {
       stream,
       sources,
+      nodes: rerankResult.nodes,
     };
   }
 }

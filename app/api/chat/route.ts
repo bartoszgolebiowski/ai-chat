@@ -1,34 +1,62 @@
-import { hydeRagEngine } from "@/lib/clients/hyde/hyde-rag-engine";
+import { conversationMemoryCache } from "@/lib/cache/conversation-memory-cache";
+import { hydeRagEngineEnhanced } from "@/lib/clients/hyde/hyde-rag-engine-enhanced";
 import { createDataStreamResponse, LlamaIndexAdapter, UIMessage } from "ai";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages } = (await req.json()) as {
+  const { messages, id } = (await req.json()) as {
     messages: UIMessage[];
+    id: string;
   };
 
+  console.log(
+    `Chat ${id}: Received ${messages.length} messages for processing`
+  );
   return createDataStreamResponse({
     status: 200,
     statusText: "OK",
     async execute(dataStream) {
       const userQuery = messages[messages.length - 1].content;
 
+      // Get conversation history from cache
+      const conversationHistory = conversationMemoryCache.getConversation(id);
+
       // Execute complete HyDE-enhanced RAG pipeline
-      const ragResult = await hydeRagEngine.execute(userQuery, {
+      const ragResult = await hydeRagEngineEnhanced.execute(userQuery, {
         retrievalTopK: 10,
         rerankTopK: 5,
         rerankStrategy: "hybrid",
+        previousContext: conversationHistory?.turns.map((turn) => ({
+          query: turn.userQuery,
+          response: turn.response,
+          nodes: turn.nodes,
+        })),
       });
 
       LlamaIndexAdapter.mergeIntoDataStream(ragResult.stream, {
         dataStream,
         callbacks: {
-          onFinal: () => {
-            ragResult.sources.forEach((source) => {
-              dataStream.writeSource(source);
-            });
+          onFinal: (response) => {
+            ragResult.sources.forEach((source) =>
+              dataStream.writeSource(source)
+            );
+
+            // Store the complete conversation turn in memory cache
+            conversationMemoryCache.addTurn(
+              id,
+              userQuery,
+              response,
+              ragResult.nodes,
+              ragResult.sources
+            );
+
+            console.log(
+              `Chat ${id}: Stored new turn. Total turns: ${
+                conversationMemoryCache.getConversation(id)?.turns.length
+              }`
+            );
           },
         },
       });

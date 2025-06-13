@@ -1,6 +1,5 @@
 import { EmbeddingModel } from "@/lib/models/embedded";
 import { LLM } from "@/lib/models/llm";
-import { FileCache } from "@/lib/utils/cache";
 import { embed, generateText } from "ai";
 
 interface HyDEOptions {
@@ -16,8 +15,6 @@ interface HyDEResult {
 }
 
 export class HyDEQueryTransformer {
-  private cache = new FileCache<HyDEResult>("hyde-cache");
-
   constructor(private llm: LLM, private embeddingModel: EmbeddingModel) {}
 
   /**
@@ -33,21 +30,6 @@ export class HyDEQueryTransformer {
       documentType = "general",
     } = options;
 
-    // Create cache key from query and options
-    const cacheKey = this.createCacheKey(query, options);
-
-    // Try to get from cache first
-    const cachedResult = await this.cache.get(cacheKey);
-    if (cachedResult) {
-      console.log("HyDE cache hit for query:", query.substring(0, 50) + "...");
-      return cachedResult;
-    }
-
-    console.log(
-      "HyDE cache miss, generating new document for query:",
-      query.substring(0, 50) + "..."
-    );
-
     const hypotheticalDocument = await this.generateHypotheticalDocument(
       query,
       { maxTokens, temperature, documentType }
@@ -62,23 +44,7 @@ export class HyDEQueryTransformer {
       optimizedEmbedding,
     };
 
-    // Cache the result (TTL: 24 hours)
-    await this.cache.set(cacheKey, result, 24 * 60 * 60 * 1000);
-
     return result;
-  }
-
-  /**
-   * Creates a cache key from query and options
-   */
-  private createCacheKey(query: string, options: HyDEOptions): string {
-    const normalizedOptions = {
-      maxTokens: options.maxTokens || 500,
-      temperature: options.temperature || 0.7,
-      documentType: options.documentType || "general",
-    };
-
-    return `${query}|${JSON.stringify(normalizedOptions)}`;
   }
 
   /**

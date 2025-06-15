@@ -6,14 +6,18 @@ import { createDataStreamResponse, LlamaIndexAdapter, UIMessage } from "ai";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages, id } = (await req.json()) as {
+  const { messages, id, selectedNodes } = (await req.json()) as {
     messages: UIMessage[];
     id: string;
+    selectedNodes: string[];
   };
 
   console.log(
     `Chat ${id}: Received ${messages.length} messages for processing`
   );
+
+  console.log(`Length of the selected nodes: ${selectedNodes.length}`);
+
   return createDataStreamResponse({
     status: 200,
     statusText: "OK",
@@ -32,6 +36,7 @@ export async function POST(req: Request) {
           response: turn.response,
           nodes: turn.nodes,
         })),
+        selectedNodes: selectedNodes,
       });
 
       LlamaIndexAdapter.mergeIntoDataStream(ragResult.stream, {

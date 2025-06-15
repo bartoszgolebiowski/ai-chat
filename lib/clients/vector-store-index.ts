@@ -1,6 +1,9 @@
 import { AzureAISearchVectorStore } from "@llamaindex/azure";
 import { VectorStoreIndex } from "llamaindex";
-import { vectorStoreClient } from "./vector-store";
+import {
+  vectorStoreConfluenceClient,
+  vectorStorePDFClient,
+} from "./vector-store";
 
 function createVectorStoreIndexClient(
   vectorStore: AzureAISearchVectorStore<any>
@@ -8,4 +11,10 @@ function createVectorStoreIndexClient(
   return VectorStoreIndex.fromVectorStore(vectorStore);
 }
 
-export const vectorStoreIndexClient = createVectorStoreIndexClient(vectorStoreClient);
+export const vectorStoreIndexConfluenceClient = createVectorStoreIndexClient(
+  vectorStoreConfluenceClient
+);
+
+export const vectorStoreIndexPDFClient = createVectorStoreIndexClient(
+  vectorStorePDFClient
+);

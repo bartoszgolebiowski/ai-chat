@@ -12,16 +12,16 @@ import {
 import { Settings } from "llamaindex";
 import { azureEmbeddingClient } from "../models/embedded";
 import { azureAiClient } from "../models/llm";
-import { searchClient } from "./search";
+import { searchConfluenceClient } from "./search";
 
-const filterableMetadataFieldKeys = {
-  filename: "filename",
-  tags: ["tags", MetadataIndexFieldType.COLLECTION],
-} as unknown as FilterableMetadataFieldKeysType;
+Settings.embedModel = azureEmbeddingClient;
+Settings.llm = azureAiClient;
 
-function createVectorStoreClient(searchClient: SearchClient<any>) {
-  Settings.embedModel = azureEmbeddingClient;
-  Settings.llm = azureAiClient;
+function createVectorStoreConfluenceClient(searchClient: SearchClient<any>) {
+  const filterableMetadataFieldKeys = {
+    filename: "filename",
+    tags: ["tags", MetadataIndexFieldType.COLLECTION],
+  } as unknown as FilterableMetadataFieldKeysType;
 
   const vectorStore = new AzureAISearchVectorStore({
     filterableMetadataFieldKeys,
@@ -41,4 +41,30 @@ function createVectorStoreClient(searchClient: SearchClient<any>) {
   return vectorStore;
 }
 
-export const vectorStoreClient = createVectorStoreClient(searchClient);
+function createVectorStorePDFClient(searchClient: SearchClient<any>) {
+  const filterableMetadataFieldKeys = {
+    filename: "filename",
+  } as unknown as FilterableMetadataFieldKeysType;
+
+  const vectorStore = new AzureAISearchVectorStore({
+    filterableMetadataFieldKeys,
+    endpoint: searchClient.endpoint,
+    indexManagement: IndexManagement.CREATE_IF_NOT_EXISTS,
+    idFieldKey: "id",
+    chunkFieldKey: "chunk",
+    embeddingFieldKey: "embedding",
+    embeddingDimensionality: 1536,
+    metadataStringFieldKey: "metadata",
+    docIdFieldKey: "doc_id",
+    languageAnalyzer: KnownAnalyzerNames.EnLucene,
+    vectorAlgorithmType: KnownVectorSearchAlgorithmKind.ExhaustiveKnn,
+    searchClient,
+  });
+
+  return vectorStore;
+}
+
+export const vectorStoreConfluenceClient =
+  createVectorStoreConfluenceClient(searchConfluenceClient);
+
+export const vectorStorePDFClient = createVectorStorePDFClient(searchConfluenceClient);

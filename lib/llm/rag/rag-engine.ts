@@ -1,4 +1,5 @@
-import { EngineResponse, NodeWithScore } from "llamaindex";
+import { createFilenameFilters } from "@/lib/tree/filter-converter";
+import { EngineResponse, MetadataFilters, NodeWithScore } from "llamaindex";
 import { Metadata } from "next";
 import { Reranker } from "../Reranker";
 import { ResponseGeneratorBase, Source } from "../ResponseGeneratorBase";
@@ -13,6 +14,7 @@ interface EnhancedRagOptions {
   contextAnalysisThreshold?: number; // 0-1, threshold for context sufficiency
   maxContextNodes?: number; // Limit previous context nodes
   contextWeightFactor?: number; // Boost factor for previous context in reranking
+  selectedNodes?: string[]; // Selected nodes from UI
   previousContext?: {
     query: string;
     response: string;
@@ -47,6 +49,7 @@ export class EnhancedRAGEngine {
       maxContextNodes = 5,
       contextWeightFactor = 1.5,
       previousContext = [],
+      selectedNodes = [],
     } = options;
 
     // Phase 1: Query Analysis and Decision Making (now async)
@@ -75,7 +78,11 @@ export class EnhancedRAGEngine {
         break;
 
       case "new-search":
-        const searchNodes = await this.performNewSearch(query, retrievalTopK);
+        const searchNodes = await this.performNewSearch(
+          query,
+          retrievalTopK,
+          createFilenameFilters(selectedNodes)
+        );
         const rerankResultNew = await this.reranker.rerank(query, searchNodes, {
           strategy: rerankStrategy,
           topK: rerankTopK,
@@ -85,7 +92,11 @@ export class EnhancedRAGEngine {
         break;
 
       case "hybrid":
-        const newNodes = await this.performNewSearch(query, retrievalTopK);
+        const newNodes = await this.performNewSearch(
+          query,
+          retrievalTopK,
+          createFilenameFilters(selectedNodes)
+        );
         const contextNodes = this.extractNodesFromContext(
           previousContext,
           maxContextNodes
@@ -153,9 +164,10 @@ export class EnhancedRAGEngine {
    */
   private async performNewSearch(
     query: string,
-    topK: number
+    topK: number,
+    filters?: MetadataFilters
   ): Promise<NodeWithScore[]> {
-    const queryResult = await this.queryEngine.query(query, topK);
+    const queryResult = await this.queryEngine.query(query, topK, filters);
     return queryResult.nodes;
   }
 

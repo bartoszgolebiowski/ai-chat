@@ -56,7 +56,7 @@ const QueryAnalysisSchema = z.object({
 
 type AIQueryAnalysis = z.infer<typeof QueryAnalysisSchema>;
 
-export class QueryAnalyzer {
+export class QueryAnalyzerConfluence {
   constructor(private llm: LLM) {}
 
   /**

@@ -12,7 +12,7 @@ import {
 import { Settings } from "llamaindex";
 import { azureEmbeddingClient } from "../models/embedded";
 import { azureAiClient } from "../models/llm";
-import { searchConfluenceClient } from "./search";
+import { searchConfluenceClient, searchPDFClient } from "./search";
 
 Settings.embedModel = azureEmbeddingClient;
 Settings.llm = azureAiClient;
@@ -67,4 +67,4 @@ function createVectorStorePDFClient(searchClient: SearchClient<any>) {
 export const vectorStoreConfluenceClient =
   createVectorStoreConfluenceClient(searchConfluenceClient);
 
-export const vectorStorePDFClient = createVectorStorePDFClient(searchConfluenceClient);
+export const vectorStorePDFClient = createVectorStorePDFClient(searchPDFClient);

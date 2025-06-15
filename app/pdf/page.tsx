@@ -1,5 +1,6 @@
 "use client";
 
+import { PdfViewer } from "@/components/pdf-viewer";
 import { TreeViewComponent, useTreeState } from "@/components/tree";
 import {
   ChatInput,
@@ -12,14 +13,17 @@ import {
   ChatMessageContent,
 } from "@/components/ui/chat-message";
 import { ChatMessageArea } from "@/components/ui/chat-message-area";
-import { confluenceTree } from "@/lib/tree/tree-converter";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { pdfTree } from "@/lib/tree/tree-converter";
 import { useChat } from "@ai-sdk/react";
 
 export default function Page() {
   const { tree, toggleNode, toggleExpand, selectedNodes } = useTreeState([
-    confluenceTree,
+    pdfTree,
   ]);
+
   const { messages, input, handleInputChange, handleSubmit } = useChat({
+    api: "/api/chat/pdf",
     body: {
       selectedNodes,
     },
@@ -28,7 +32,7 @@ export default function Page() {
   return (
     <div className="flex h-screen">
       {/* Left sidebar with tree */}
-      <div className="w-120 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+      <div className="w-80 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-shrink-0">
         <TreeViewComponent
           nodes={tree}
           onToggle={toggleNode}
@@ -36,11 +40,16 @@ export default function Page() {
         />
       </div>
 
-      {/* Main chat area */}
-      <div className="flex-1 flex flex-col">
-        <div className="container mx-auto max-w-2xl h-full flex flex-col">
+      {/* PDF Viewer - takes remaining space */}
+      <div className="flex-1 border-r border-gray-200 dark:border-gray-700">
+        <PdfViewer selectedNodes={selectedNodes} />
+      </div>
+
+      {/* Main chat area - fixed width */}
+      <div className="h-screen w-160 flex flex-col flex-shrink-0 mr-10 relative">
+        <ScrollArea className="h-[calc(100vh-120px)]">
           <ChatMessageArea
-            className="space-y-4 p-4 flex-1"
+            className="space-y-4 p-4"
             scrollButtonAlignment="center"
           >
             {messages.map((message) => (
@@ -75,18 +84,18 @@ export default function Page() {
               </ChatMessage>
             ))}
           </ChatMessageArea>
+        </ScrollArea>
 
-          <ChatInput
-            variant="default"
-            value={input}
-            onChange={handleInputChange}
-            onSubmit={handleSubmit}
-            className="mb-4 mx-4"
-          >
-            <ChatInputTextArea placeholder="Type a message..." />
-            <ChatInputSubmit />
-          </ChatInput>
-        </div>
+        <ChatInput
+          variant="default"
+          value={input}
+          onChange={handleInputChange}
+          onSubmit={handleSubmit}
+          className="absolute bottom-4 left-4 right-14 bg-white dark:bg-gray-800"
+        >
+          <ChatInputTextArea placeholder="Type a message..." />
+          <ChatInputSubmit />
+        </ChatInput>
       </div>
     </div>
   );

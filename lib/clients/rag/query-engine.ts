@@ -1,4 +1,7 @@
 import { RagQueryEngine } from "../../llm/rag/rag-query-engine";
-import { retrieverConfluenceClient } from "../retriver";
+import { retrieverConfluenceClient, retrieverPDFClient } from "../retriver";
 
-export const queryEngine = new RagQueryEngine(retrieverConfluenceClient);
+export const confluenceQueryEngine = new RagQueryEngine(
+  retrieverConfluenceClient
+);
+export const pdfQueryEngine = new RagQueryEngine(retrieverPDFClient);

@@ -16,7 +16,8 @@ const envSchema = z.object({
   SEARCH_SERVICE_API_KEY: z.string(),
   SEARCH_SERVICE_ENDPOINT: z.string(),
   SEARCH_SERVICE_API_VERSION: z.string(),
-  SEARCH_SERVICE_INDEX_NAME: z.string(),
+  SEARCH_SERVICE_INDEX_NAME_CONFLUENCE: z.string(),
+  SEARCH_SERVICE_INDEX_NAME_PDF: z.string(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

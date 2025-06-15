@@ -18,6 +18,6 @@ export const retrieverConfluenceClient = createRetriverClient(
   await vectorStoreIndexConfluenceClient
 );
 
-export const retrieverODFClient = createRetriverClient(
+export const retrieverPDFClient = createRetriverClient(
   await vectorStoreIndexPDFClient
 );

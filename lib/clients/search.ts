@@ -5,7 +5,7 @@ import { env } from "../env";
 function createSearchConfluenceClient() {
   const searchServiceEndpoint = env.SEARCH_SERVICE_ENDPOINT;
   const searchServiceApiKey = env.SEARCH_SERVICE_API_KEY;
-  const searchIndexName = env.SEARCH_SERVICE_INDEX_NAME;
+  const searchIndexName = env.SEARCH_SERVICE_INDEX_NAME_CONFLUENCE;
 
   return new SearchClient(
     searchServiceEndpoint,
@@ -17,7 +17,7 @@ function createSearchConfluenceClient() {
 function createSearchPDFClient() {
   const searchServiceEndpoint = env.SEARCH_SERVICE_ENDPOINT;
   const searchServiceApiKey = env.SEARCH_SERVICE_API_KEY;
-  const searchIndexName = env.SEARCH_SERVICE_INDEX_NAME;
+  const searchIndexName = env.SEARCH_SERVICE_INDEX_NAME_PDF;
 
   return new SearchClient(
     searchServiceEndpoint,

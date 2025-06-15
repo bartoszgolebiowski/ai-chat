@@ -1,6 +1,11 @@
-import { ResponseGenerator } from "@/lib/llm/rag/rag-response-generator";
+import { ConfluenceResponseGenerator } from "@/lib/llm/rag/rag-confluence-response-generator";
+import { PDFResponseGenerator } from "@/lib/llm/rag/rag-pdf-response-generator";
 import { simpleChatEngineClient } from "../simple-chat.engine";
 
-export const hydeResposneGenerator = new ResponseGenerator(
+export const confluenceResposneGenerator = new ConfluenceResponseGenerator(
+  simpleChatEngineClient
+);
+
+export const pdfResposneGenerator = new PDFResponseGenerator(
   simpleChatEngineClient
 );

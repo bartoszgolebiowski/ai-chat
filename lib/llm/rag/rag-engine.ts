@@ -3,7 +3,8 @@ import { EngineResponse, MetadataFilters, NodeWithScore } from "llamaindex";
 import { Metadata } from "next";
 import { Reranker } from "../Reranker";
 import { ResponseGeneratorBase, Source } from "../ResponseGeneratorBase";
-import { QueryAnalyzer } from "./query-analyzer";
+import { QueryAnalyzerConfluence } from "./query-analyzer-confluence";
+import { QueryAnalyzerPDF } from "./query-analyzer-pdf";
 import { RagQueryEngine } from "./rag-query-engine";
 
 // Enhanced interfaces from the plan
@@ -34,7 +35,7 @@ export class EnhancedRAGEngine {
     private queryEngine: RagQueryEngine,
     private reranker: Reranker,
     private responseGenerator: ResponseGeneratorBase,
-    private queryAnalyzer: QueryAnalyzer
+    private queryAnalyzer: QueryAnalyzerConfluence | QueryAnalyzerPDF
   ) {}
 
   async execute(

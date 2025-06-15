@@ -1,12 +1,22 @@
 import { EnhancedRAGEngine } from "@/lib/llm/rag/rag-engine";
-import { queryAnalyzer } from "../query-analyzer";
 import { reranker } from "../reranker";
-import { queryEngine } from "./query-engine";
-import { hydeResposneGenerator } from "./response-generator";
+import { queryAnalyzerConfluence, queryAnalyzerPDF } from "./query-analyzer";
+import { confluenceQueryEngine, pdfQueryEngine } from "./query-engine";
+import {
+  confluenceResposneGenerator,
+  pdfResposneGenerator,
+} from "./response-generator";
 
-export const ragEngineEnhanced = new EnhancedRAGEngine(
-  queryEngine,
+export const ragEngineConfluenceEnhanced = new EnhancedRAGEngine(
+  confluenceQueryEngine,
   reranker,
-  hydeResposneGenerator,
-  queryAnalyzer
+  confluenceResposneGenerator,
+  queryAnalyzerConfluence
+);
+
+export const ragEnginePDFEnhanced = new EnhancedRAGEngine(
+  pdfQueryEngine,
+  reranker,
+  pdfResposneGenerator,
+  queryAnalyzerPDF
 );

@@ -1,5 +1,5 @@
 import { conversationMemoryCache } from "@/lib/cache/conversation-memory-cache";
-import { ragEngineConfluenceEnhanced } from "@/lib/clients/rag/rag-engine-enhanced";
+import { ragEnginePDFEnhanced } from "@/lib/clients/rag/rag-engine-enhanced";
 import { createDataStreamResponse, LlamaIndexAdapter, UIMessage } from "ai";
 
 // Allow streaming responses up to 30 seconds
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   };
 
   console.log(
-    `Confluence Chat ${id}: Received ${messages.length} messages for processing`
+    `PDF Chat ${id}: Received ${messages.length} messages for processing`
   );
 
   console.log(`Length of the selected nodes: ${selectedNodes.length}`);
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       // Get conversation history from cache
       const conversationHistory = conversationMemoryCache.getConversation(id);
 
-      const ragResult = await ragEngineConfluenceEnhanced.execute(userQuery, {
+      const ragResult = await ragEnginePDFEnhanced.execute(userQuery, {
         retrievalTopK: 10,
         rerankTopK: 5,
         rerankStrategy: "hybrid",
@@ -43,9 +43,6 @@ export async function POST(req: Request) {
         dataStream,
         callbacks: {
           onFinal: (response) => {
-            ragResult.sources.forEach((source) =>
-              dataStream.writeSource(source)
-            );
 
             // Store the complete conversation turn in memory cache
             conversationMemoryCache.addTurn(

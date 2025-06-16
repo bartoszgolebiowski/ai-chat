@@ -97,7 +97,6 @@ export class EnhancedPDFRAGEngine {
         analysisResult,
       });
 
-    console.log(`Enhanced PDF RAG completed successfully`);
 
     return {
       stream,

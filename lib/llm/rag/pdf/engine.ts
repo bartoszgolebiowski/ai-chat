@@ -2,19 +2,21 @@ import { createFilenameFilters } from "@/lib/tree/filter-converter";
 import { EngineResponse, MetadataFilters, NodeWithScore } from "llamaindex";
 import { Metadata } from "next";
 import { Reranker } from "../../Reranker";
-import { ResponseGeneratorBase, Source } from "../../ResponseGeneratorBase";
+import { Source } from "../../ResponseGeneratorBase";
 import { RagQueryEngine } from "../rag-query-engine";
-import { QueryAnalyzerConfluence } from "./query-analyzer";
+import { QueryAnalyzerPDF } from "./query-analyzer";
+import { PDFResponseGenerator } from "./response-generator";
+import { DecisionAnalysis } from "./schemas";
 
-// Enhanced interfaces from the plan
-interface EnhancedRagOptions {
+// Enhanced interfaces
+interface EnhancedPDFRagOptions {
   retrievalTopK?: number;
   rerankTopK?: number;
   rerankStrategy?: "semantic" | "hybrid";
-  contextAnalysisThreshold?: number; // 0-1, threshold for context sufficiency
-  maxContextNodes?: number; // Limit previous context nodes
-  contextWeightFactor?: number; // Boost factor for previous context in reranking
-  selectedNodes?: string[]; // Selected nodes from UI
+  contextAnalysisThreshold?: number;
+  maxContextNodes?: number;
+  contextWeightFactor?: number;
+  selectedNodes?: string[];
   previousContext?: {
     query: string;
     response: string;
@@ -22,25 +24,31 @@ interface EnhancedRagOptions {
   }[];
 }
 
-interface EnhancedRagResult {
+interface EnhancedPDFRagResult {
   stream: AsyncIterable<EngineResponse>;
   sources: Source[];
   nodes: NodeWithScore[];
-  analysisResult: "context-only" | "hybrid" | "new-search";
 }
 
-export class EnhancedRAGEngine {
+/**
+ * Enhanced RAG Engine specifically designed for PDF document analysis
+ * with advanced query understanding and response planning.
+ * All dependencies are injected via constructor - no field instantiation.
+ */
+export class EnhancedPDFRAGEngine {
   constructor(
-    private queryEngine: RagQueryEngine,
-    private reranker: Reranker,
-    private responseGenerator: ResponseGeneratorBase,
-    private queryAnalyzer: QueryAnalyzerConfluence
-  ) {}
+    private readonly queryEngine: RagQueryEngine,
+    private readonly reranker: Reranker,
+    private readonly responseGenerator: PDFResponseGenerator,
+    private readonly queryAnalyzer: QueryAnalyzerPDF
+  ) {
+    // No field instantiation - all services are injected
+  }
 
   async execute(
     query: string,
-    options: EnhancedRagOptions = {}
-  ): Promise<EnhancedRagResult> {
+    options: EnhancedPDFRagOptions = {}
+  ): Promise<EnhancedPDFRagResult> {
     const {
       retrievalTopK = 20,
       rerankTopK = 10,
@@ -52,50 +60,61 @@ export class EnhancedRAGEngine {
       selectedNodes = [],
     } = options;
 
-    // Phase 1: Query Analysis and Decision Making (now async)
-    const queryAnalysis = await this.queryAnalyzer.analyzeQuery({
+    console.log(`Enhanced PDF RAG: Starting analysis for query: "${query}"`);
+
+    // Phase 1: Comprehensive Query Analysis and Planning
+    const analysisResult = await this.queryAnalyzer.analyzeAndPlan({
       query,
       previousContext,
     });
 
-    const decision = this.queryAnalyzer.makeDecision(
-      queryAnalysis,
-      contextAnalysisThreshold
-    );
+    const { decision, responsePlan } = analysisResult;
 
-    console.log(`Enhanced RAG: Decision: ${decision}`);
+    console.log(
+      `Enhanced PDF RAG: Strategy: ${decision.strategy}, Confidence: ${decision.confidence}`
+    );
+    console.log(
+      `Response Plan: ${responsePlan.sourcingStrategy} sourcing, ${responsePlan.formatType} format`
+    );
 
     let finalNodes: NodeWithScore[];
     let sources: Source[];
 
-    switch (decision) {
+    // Phase 2: Execute search strategy based on decision
+    switch (decision.strategy) {
       case "context-only":
         finalNodes = this.extractNodesFromContext(
           previousContext,
           maxContextNodes
         );
         sources = [];
+        console.log(
+          `Using context-only strategy with ${finalNodes.length} nodes`
+        );
         break;
 
       case "new-search":
         const searchNodes = await this.performNewSearch(
           query,
           retrievalTopK,
-          createFilenameFilters(selectedNodes)
+          createFilenameFilters(selectedNodes),
+          decision.searchParameters
         );
         const rerankResultNew = await this.reranker.rerank(query, searchNodes, {
           strategy: rerankStrategy,
-          topK: rerankTopK,
+          topK: Math.max(rerankTopK, Math.round(searchNodes.length / 2)),
         });
         finalNodes = rerankResultNew.nodes;
         sources = this.responseGenerator.extractSources(finalNodes);
+        console.log(`New search completed with ${finalNodes.length} nodes`);
         break;
 
       case "hybrid":
         const newNodes = await this.performNewSearch(
           query,
           retrievalTopK,
-          createFilenameFilters(selectedNodes)
+          createFilenameFilters(selectedNodes),
+          decision.searchParameters
         );
         const contextNodes = this.extractNodesFromContext(
           previousContext,
@@ -117,40 +136,47 @@ export class EnhancedRAGEngine {
         );
         finalNodes = rerankResult.nodes;
         sources = this.responseGenerator.extractSources(finalNodes);
+        console.log(
+          `Hybrid strategy: ${contextNodes.length} context + ${newNodes.length} new = ${finalNodes.length} final nodes`
+        );
         break;
 
       default:
-        throw new Error(`Unknown decision: ${decision}`);
-    }
-
-    // Generate streaming response with enhanced context
+        throw new Error(`Unknown decision strategy: ${decision.strategy}`);
+    } // Phase 3: Generate enhanced response based on plan
     const { stream } = await this.responseGenerator.generateStreamingResponse({
       query,
       nodes: finalNodes,
+      analysisResult,
     });
 
-    console.log(
-      `Enhanced RAG completed: Used ${finalNodes.length} nodes via ${decision} strategy`
-    );
+    console.log(`Enhanced PDF RAG completed successfully`);
 
     return {
       stream,
       sources,
       nodes: finalNodes,
-      analysisResult: decision,
     };
   }
+
   /**
-   * Extract nodes from previous context
+   * Extract nodes from previous context with priority scoring
    */
   private extractNodesFromContext(
-    previousContext: EnhancedRagOptions["previousContext"] = [],
+    previousContext: EnhancedPDFRagOptions["previousContext"] = [],
     maxNodes: number
   ): NodeWithScore[] {
     const allNodes: NodeWithScore[] = [];
 
-    previousContext.forEach((context) => {
-      allNodes.push(...context.nodes);
+    previousContext.forEach((context, index) => {
+      // Apply recency boost - more recent context gets higher priority
+      const recencyBoost = 1 + 0.1 * (previousContext.length - index);
+      context.nodes.forEach((node) => {
+        allNodes.push({
+          ...node,
+          score: (node.score || 0) * recencyBoost,
+        });
+      });
     });
 
     // Sort by score and take top nodes
@@ -160,19 +186,30 @@ export class EnhancedRAGEngine {
   }
 
   /**
-   * Perform new vector search
+   * Perform enhanced vector search with decision-guided parameters
    */
   private async performNewSearch(
     query: string,
     topK: number,
-    filters?: MetadataFilters
+    filters?: MetadataFilters,
+    searchParameters?: DecisionAnalysis["searchParameters"]
   ): Promise<NodeWithScore[]> {
-    const queryResult = await this.queryEngine.query(query, topK, filters);
+    // Adjust search parameters based on decision analysis
+    const adjustedTopK = searchParameters
+      ? topK * searchParameters.breadth
+      : topK;
+
+    const queryResult = await this.queryEngine.query(
+      query,
+      adjustedTopK,
+      filters
+    );
+
     return queryResult.nodes;
   }
 
   /**
-   * Phase 3.2: Combine and deduplicate nodes
+   * Combine and deduplicate nodes with enhanced scoring
    */
   private combineAndDeduplicateNodes(
     contextNodes: NodeWithScore[],
@@ -181,13 +218,13 @@ export class EnhancedRAGEngine {
     const seenIds = new Set<string>();
     const combinedNodes: NodeWithScore[] = [];
 
-    // Add context nodes first (higher priority)
+    // Add context nodes first with priority boost
     contextNodes.forEach((node) => {
       if (!seenIds.has(node.node.id_)) {
         seenIds.add(node.node.id_);
         combinedNodes.push({
           ...node,
-          score: (node.score || 0) * 1.2, // Boost context nodes
+          score: (node.score || 0) * 1.3, // Higher boost for context relevance
         });
       }
     });
@@ -204,7 +241,7 @@ export class EnhancedRAGEngine {
   }
 
   /**
-   * Phase 3.1: Context-aware reranking
+   * Context-aware reranking with enhanced scoring
    */
   private async contextAwareRerank(
     query: string,
@@ -216,26 +253,28 @@ export class EnhancedRAGEngine {
       contextWeightFactor: number;
     }
   ): Promise<{ nodes: NodeWithScore[] }> {
-    // Apply context weight factor to context nodes
+    // Apply sophisticated weighting to context nodes
     const weightedNodes = nodes.map((node, index) => {
       if (index < contextNodeCount) {
-        // These are context nodes, boost their scores
+        // Context nodes get exponential boost based on position
+        const positionFactor = 1 + 0.2 * (contextNodeCount - index);
         return {
           ...node,
-          score: (node.score || 0) * options.contextWeightFactor,
+          score:
+            (node.score || 0) * options.contextWeightFactor * positionFactor,
         };
       }
       return node;
     });
 
-    // Use existing reranker with weighted nodes
+    // Use existing reranker with enhanced weighted nodes
     const rerankResult = await this.reranker.rerank(query, weightedNodes, {
       strategy: options.strategy,
       topK: options.topK,
     });
 
     console.log(
-      `Context-aware reranking: ${contextNodeCount} context nodes boosted by ${options.contextWeightFactor}x`
+      `Context-aware reranking: ${contextNodeCount} context nodes enhanced with ${options.contextWeightFactor}x boost`
     );
 
     return { nodes: rerankResult.nodes };

@@ -5,6 +5,10 @@ import {
 } from "./query-analysis-engine";
 import { ResponsePlanner } from "./response-planner";
 
+export type AnalyzedQueryResult = ReturnType<
+  QueryAnalyzerPDF["analyzeAndPlan"]
+>;
+
 export class QueryAnalyzerPDF {
   constructor(
     private responsePlanner: ResponsePlanner,
@@ -40,5 +44,3 @@ export class QueryAnalyzerPDF {
     }
   }
 }
-
-export type AnalyzedQueryResult = ReturnType<QueryAnalyzerPDF["analyzeAndPlan"]>;

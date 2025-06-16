@@ -1,6 +1,6 @@
 "use client";
 
-import { usePdfViewer } from "@/hooks/usePdfViewer";
+import { usePdfViewer } from "@/hooks/use-pdf-viewer";
 import { X } from "lucide-react";
 
 interface PdfViewerProps {
@@ -8,7 +8,8 @@ interface PdfViewerProps {
 }
 
 export function PdfViewer({ selectedNodes }: PdfViewerProps) {
-  const { pdfTabs, activePdf, activeTabId, selectTab, closeTab } = usePdfViewer(selectedNodes);
+  const { pdfTabs, activePdf, activeTabId, selectTab, closeTab } =
+    usePdfViewer(selectedNodes);
 
   if (pdfTabs.length === 0) {
     return (
@@ -52,7 +53,7 @@ export function PdfViewer({ selectedNodes }: PdfViewerProps) {
       <div className="flex-1 relative">
         {activePdf && (
           <iframe
-            src={activePdf.pdfPath}
+            src={`${activePdf.pdfPath}#view=FitH`}
             className="w-full h-full border-0"
             title={`PDF: ${activePdf.fileName}`}
           />

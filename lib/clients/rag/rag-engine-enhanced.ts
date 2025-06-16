@@ -1,4 +1,5 @@
-import { EnhancedRAGEngine } from "@/lib/llm/rag/rag-engine";
+import { EnhancedRAGEngine } from "@/lib/llm/rag/confluence/rag-engine";
+import { EnhancedPDFRAGEngine } from "@/lib/llm/rag/pdf/rag-engine";
 import { reranker } from "../reranker";
 import { queryAnalyzerConfluence, queryAnalyzerPDF } from "./query-analyzer";
 import { confluenceQueryEngine, pdfQueryEngine } from "./query-engine";
@@ -14,7 +15,7 @@ export const ragEngineConfluenceEnhanced = new EnhancedRAGEngine(
   queryAnalyzerConfluence
 );
 
-export const ragEnginePDFEnhanced = new EnhancedRAGEngine(
+export const ragEnginePDFEnhanced = new EnhancedPDFRAGEngine(
   pdfQueryEngine,
   reranker,
   pdfResposneGenerator,

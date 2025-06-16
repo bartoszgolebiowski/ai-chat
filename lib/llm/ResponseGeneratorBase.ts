@@ -1,6 +1,6 @@
 import { EngineResponse, NodeWithScore } from "llamaindex";
 
-interface GenerateResponseInput {
+export interface GenerateResponseInput {
   query: string;
   nodes: NodeWithScore[];
 }
@@ -12,18 +12,12 @@ export interface Source {
   url: string;
 }
 
-interface StreamingResponseResult {
+export interface StreamingResponseResult {
   sources: Source[];
   stream: AsyncIterable<EngineResponse>;
 }
 
-export abstract class ResponseGeneratorBase {
-  /**
-   * Generate a streaming response
-   */
-  abstract generateStreamingResponse(
-    input: GenerateResponseInput
-  ): Promise<StreamingResponseResult>;
+export class ResponseGeneratorBase {
 
   /**
    * Extract sources from nodes

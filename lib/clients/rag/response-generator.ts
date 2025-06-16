@@ -1,5 +1,5 @@
-import { ConfluenceResponseGenerator } from "@/lib/llm/rag/rag-confluence-response-generator";
-import { PDFResponseGenerator } from "@/lib/llm/rag/rag-pdf-response-generator";
+import { ConfluenceResponseGenerator } from "@/lib/llm/rag/confluence/rag-response-generator";
+import { PDFResponseGenerator } from "@/lib/llm/rag/pdf/rag-response-generator";
 import { simpleChatEngineClient } from "../simple-chat.engine";
 
 export const confluenceResposneGenerator = new ConfluenceResponseGenerator(

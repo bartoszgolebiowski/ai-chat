@@ -1,11 +1,10 @@
 import { createFilenameFilters } from "@/lib/tree/filter-converter";
 import { EngineResponse, MetadataFilters, NodeWithScore } from "llamaindex";
 import { Metadata } from "next";
-import { Reranker } from "../Reranker";
-import { ResponseGeneratorBase, Source } from "../ResponseGeneratorBase";
-import { QueryAnalyzerConfluence } from "./query-analyzer-confluence";
-import { QueryAnalyzerPDF } from "./query-analyzer-pdf";
-import { RagQueryEngine } from "./rag-query-engine";
+import { Reranker } from "../../Reranker";
+import { ResponseGeneratorBase, Source } from "../../ResponseGeneratorBase";
+import { RagQueryEngine } from "../rag-query-engine";
+import { QueryAnalyzerConfluence } from "./query-analyzer";
 
 // Enhanced interfaces from the plan
 interface EnhancedRagOptions {
@@ -35,7 +34,7 @@ export class EnhancedRAGEngine {
     private queryEngine: RagQueryEngine,
     private reranker: Reranker,
     private responseGenerator: ResponseGeneratorBase,
-    private queryAnalyzer: QueryAnalyzerConfluence | QueryAnalyzerPDF
+    private queryAnalyzer: QueryAnalyzerConfluence
   ) {}
 
   async execute(
@@ -43,8 +42,8 @@ export class EnhancedRAGEngine {
     options: EnhancedRagOptions = {}
   ): Promise<EnhancedRagResult> {
     const {
-      retrievalTopK = 10,
-      rerankTopK = 5,
+      retrievalTopK = 20,
+      rerankTopK = 10,
       rerankStrategy = "hybrid",
       contextAnalysisThreshold = 0.7,
       maxContextNodes = 5,

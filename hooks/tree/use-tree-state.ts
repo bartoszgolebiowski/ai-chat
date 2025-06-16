@@ -28,10 +28,7 @@ function transformToInternalNode(
 
 // Helper function to create a deep copy of the tree
 function deepCopyTree(nodes: InternalTreeNode[]): InternalTreeNode[] {
-  return nodes.map((node) => ({
-    ...node,
-    children: deepCopyTree(node.children),
-  }));
+  return structuredClone(nodes); // Using structuredClone for deep copy
 }
 
 // Helper function to find a node by ID in the tree

@@ -1,5 +1,9 @@
 import { MetadataMode, SimpleChatEngine } from "llamaindex";
-import { ResponseGeneratorBase } from "../ResponseGeneratorBase";
+import {
+  GenerateResponseInput,
+  ResponseGeneratorBase,
+  StreamingResponseResult,
+} from "../../ResponseGeneratorBase";
 
 export class ConfluenceResponseGenerator extends ResponseGeneratorBase {
   private static readonly SYSTEM_PROMPT = `
@@ -22,8 +26,8 @@ Odpowiadaj krótko i rzeczowo w języku polskim.
   }
 
   async generateStreamingResponse(
-    input: Parameters<ResponseGeneratorBase["generateStreamingResponse"]>[0]
-  ): ReturnType<ResponseGeneratorBase["generateStreamingResponse"]> {
+    input: GenerateResponseInput
+  ): Promise<StreamingResponseResult> {
     const { query, nodes } = input;
 
     const contents = nodes.map((node) =>

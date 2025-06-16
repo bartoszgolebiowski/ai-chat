@@ -1,7 +1,7 @@
 import { generateObject } from "ai";
 import { MetadataMode, NodeWithScore } from "llamaindex";
 import { z } from "zod";
-import type { LLM } from "../../models/llm";
+import type { LLM } from "../../../models/llm";
 
 export interface QueryAnalysisInput {
   query: string;
@@ -72,13 +72,7 @@ export class QueryAnalyzerConfluence {
       // Use AI to analyze the query
       const aiAnalysis = await this.performAIAnalysis(query, contextSummary);
 
-      return {
-        isFollowUp: aiAnalysis.isFollowUp,
-        requiresNewSearch: aiAnalysis.requiresNewSearch,
-        contextRelevance: aiAnalysis.contextRelevance,
-        missingInformation: aiAnalysis.missingInformation,
-        queryType: aiAnalysis.queryType,
-      };
+      return aiAnalysis;
     } catch (error) {
       console.warn(
         "AI analysis failed, falling back to rule-based analysis:",

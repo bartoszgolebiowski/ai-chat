@@ -8,7 +8,7 @@ import {
   QueryAnalysisSchema,
 } from "./schemas";
 
-export class QueryAnalysisEngine {
+export class ConfluenceQueryAnalysisEngine {
   constructor(private llm: LLM) {}
 
   async analyzeQuery(input: QueryAnalysisInput): Promise<QueryAnalysisOutput> {
@@ -68,9 +68,6 @@ Proszę przeanalizować zapytanie i określić:
 5. **Pewność**: Jak pewny jesteś tej analizy? (0.0 = bardzo niepewny, 1.0 = bardzo pewny)
 
 Rozważ następujące czynniki:
-- Bezpośrednie odniesienia do poprzedniej treści ("to", "tamto", "ten wspomniany", itp.)
-- Użycie zaimków sugerujących poprzedni kontekst
-- Słowa pytające sugerujące brakujące informacje
 - Semantyczny związek między bieżącym zapytaniem a poprzednim kontekstem
 - Czy poprzedni kontekst zawiera wystarczające informacje do odpowiedzi na zapytanie
 

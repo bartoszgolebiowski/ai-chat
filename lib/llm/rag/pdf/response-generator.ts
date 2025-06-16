@@ -3,7 +3,7 @@ import {
   GenerateResponseInput,
   ResponseGeneratorBase,
   StreamingResponseResult,
-} from "../../ResponseGeneratorBase";
+} from "../../response-generator-base";
 import { AnalyzedQueryResult } from "./query-analyzer";
 
 export class PDFResponseGenerator extends ResponseGeneratorBase {

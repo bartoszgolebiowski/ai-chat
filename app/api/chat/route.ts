@@ -1,5 +1,5 @@
 import { conversationMemoryCache } from "@/lib/cache/conversation-memory-cache";
-import { ragEngineConfluenceEnhanced } from "@/lib/clients/rag/rag-engine-enhanced";
+import { ragEngineConfluenceEnhanced } from "@/lib/clients/rag/confluence/rag-engine-enhanced";
 import { createDataStreamResponse, LlamaIndexAdapter, UIMessage } from "ai";
 
 // Allow streaming responses up to 30 seconds
@@ -28,9 +28,6 @@ export async function POST(req: Request) {
       const conversationHistory = conversationMemoryCache.getConversation(id);
 
       const ragResult = await ragEngineConfluenceEnhanced.execute(userQuery, {
-        retrievalTopK: 10,
-        rerankTopK: 5,
-        rerankStrategy: "hybrid",
         previousContext: conversationHistory?.turns.map((turn) => ({
           query: turn.userQuery,
           response: turn.response,

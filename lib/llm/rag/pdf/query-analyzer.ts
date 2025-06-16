@@ -1,19 +1,19 @@
-import { DecisionEngine } from "./decision-engine";
+import { PDFDecisionEngine } from "./decision-engine";
 import {
-  QueryAnalysisEngine,
+  PDFQueryAnalysisEngine,
   QueryAnalysisInput,
 } from "./query-analysis-engine";
-import { ResponsePlanner } from "./response-planner";
+import { PDFResponsePlanner } from "./response-planner";
 
 export type AnalyzedQueryResult = ReturnType<
-  QueryAnalyzerPDF["analyzeAndPlan"]
+  PDFQueryAnalyzer["analyzeAndPlan"]
 >;
 
-export class QueryAnalyzerPDF {
+export class PDFQueryAnalyzer {
   constructor(
-    private responsePlanner: ResponsePlanner,
-    private queryAnalysisEngine: QueryAnalysisEngine,
-    private decisionEngine: DecisionEngine
+    private responsePlanner: PDFResponsePlanner,
+    private queryAnalysisEngine: PDFQueryAnalysisEngine,
+    private decisionEngine: PDFDecisionEngine
   ) {}
 
   /**

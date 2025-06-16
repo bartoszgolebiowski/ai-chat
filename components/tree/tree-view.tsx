@@ -1,6 +1,7 @@
 "use client";
 
 import { InternalTreeNode } from "@/hooks/tree/tree";
+import React from "react";
 import { TreeNodeComponent } from "./tree-node";
 import { TreeScroll } from "./tree-scroll";
 
@@ -11,7 +12,7 @@ interface TreeViewComponentProps {
   maxHeight?: string;
 }
 
-export function TreeViewComponent({
+function TreeViewComponentRaw({
   nodes,
   onToggle,
   onToggleExpand,
@@ -32,3 +33,11 @@ export function TreeViewComponent({
     </TreeScroll>
   );
 }
+
+export const TreeViewComponent = React.memo(
+  TreeViewComponentRaw,
+  (prevProps, nextProps) => {
+    // Only re-render if nodes or handlers change
+    return prevProps.nodes === nextProps.nodes;
+  }
+);

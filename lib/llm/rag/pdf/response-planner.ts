@@ -2,7 +2,7 @@ import { generateObject } from "ai";
 import type { LLM } from "../../../models/llm";
 import { DecisionAnalysis, ResponsePlan, ResponsePlanSchema } from "./schemas";
 
-export class ResponsePlanner {
+export class PDFResponsePlanner {
   constructor(private llm: LLM) {}
 
   async planResponse(

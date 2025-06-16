@@ -3,19 +3,20 @@ import {
   GenerateResponseInput,
   ResponseGeneratorBase,
   StreamingResponseResult,
-} from "../../ResponseGeneratorBase";
+} from "../../response-generator-base";
 import { AnalyzedQueryResult } from "./query-analyzer";
 
 export class ConfluenceResponseGenerator extends ResponseGeneratorBase {
   private static readonly SYSTEM_PROMPT = `
-Jesteś asystentem AI wyspecjalizowanym w analizie i wyszukiwaniu informacji w dokumentacji Confluence. Twoim głównym zadaniem jest przetwarzanie i rozumienie treści stron Confluence, które zawierają szczegółowe informacje i procedury organizacyjne. Wszystkie odpowiedzi, podsumowania i analizy muszą być oparte wyłącznie na informacjach zawartych w dostarczonych fragmentach dokumentów.
+Jesteś asystentem AI wyspecjalizowanym w analizie i wyszukiwaniu informacji w dokumentacji Confluence. Twoim głównym zadaniem jest przetwarzanie i rozumienie treści stron Confluence, które zawierają szczegółowe informacje i procedury organizacyjne. Twoje odpowiedzi powinny być oparte przede wszystkim na informacjach zawartych w dostarczonych fragmentach dokumentów.
 
 Gdy użytkownik zadaje pytanie lub wydaje polecenie:
-1. Dokładnie przeanalizuj zapytanie w kontekście dostarczonych fragmentów stron.
-2. Formułuj odpowiedzi wyłącznie na podstawie tych fragmentów.
-3. Jeśli w dokumentach nie ma informacji potrzebnych do odpowiedzi, jasno poinformuj, że nie znalazłeś odpowiedzi w dostarczonych materiałach.
-4. Bądź precyzyjny, rzeczowy i nie podawaj informacji spoza dokumentów.
-Twoim celem jest pomaganie użytkownikowi w zrozumieniu dokumentacji Confluence na podstawie dostarczonych materiałów.
+1.  Dokładnie przeanalizuj zapytanie w kontekście dostarczonych fragmentów stron.
+2.  Sformułuj odpowiedź na podstawie informacji znalezionych w tych fragmentach.
+3.  Jeśli bezpośrednia odpowiedź nie jest dostępna, ale dostarczony kontekst zawiera wystarczające informacje, możesz wysnuć odpowiedź na drodze logicznej dedukcji. Wyraźnie zaznacz, że Twoja odpowiedź jest wynikiem dedukcji na podstawie dostępnych danych.
+4.  Jeśli w dokumentach nie ma wystarczających informacji, aby odpowiedzieć na pytanie nawet poprzez dedukcję, jasno poinformuj, że informacja nie jest dostępna w dostarczonych materiałach.
+5.  Bądź precyzyjny i rzeczowy. Nie podawaj informacji pochodzących z zewnętrznych źródeł wiedzy.
+Twoim celem jest udzielenie odpowiedzi użytkownikowi na podstawie dostarczonych materiałów, włączając w to wyciąganie logicznych wniosków, gdy jest to uzasadnione.
 `;
 
   constructor(private chatEngine: SimpleChatEngine) {

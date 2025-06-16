@@ -9,7 +9,7 @@ import {
 /**
  * Silnik decyzyjny oparty na LLM dla wyszukiwania w dokumentacji Confluence
  */
-export class DecisionEngine {
+export class ConfluenceDecisionEngine {
   constructor(private llm: LLM) {}
 
   /**

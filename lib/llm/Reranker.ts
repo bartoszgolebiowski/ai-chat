@@ -58,6 +58,32 @@ export class Reranker {
     };
   }
 
+  async contextAwareRerank(
+    query: string,
+    nodes: NodeWithScore[],
+    contextNodeCount: number,
+    options: {
+      strategy: "semantic" | "hybrid";
+      topK: number;
+      contextWeightFactor: number;
+    }
+  ): Promise<{ nodes: NodeWithScore[] }> {
+    const weightedNodes = nodes.map((node, index) => {
+      if (index < contextNodeCount) {
+        return {
+          ...node,
+          score: (node.score || 0) * options.contextWeightFactor,
+        };
+      }
+      return node;
+    });
+    const rerankResult = await this.rerank(query, weightedNodes, {
+      strategy: options.strategy,
+      topK: options.topK,
+    });
+    return { nodes: rerankResult.nodes };
+  }
+
   /**
    * Rerank based on semantic similarity using embeddings
    */

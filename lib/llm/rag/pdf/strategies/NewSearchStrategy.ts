@@ -1,9 +1,9 @@
 import { NodeWithScore } from "llamaindex";
 import { RagSearcher } from "../../rag-searcher";
-import { EnhancedRagOptions } from "../engine";
-import { IRagStrategy } from "./IRagStrategy";
+import { EnhancedPDFRagOptions } from "../engine";
+import { IPDFRagStrategy } from "./IRagStrategy";
 
-export class NewSearchStrategy implements IRagStrategy {
+export class PDFNewSearchStrategy implements IPDFRagStrategy {
   constructor(private searcher: RagSearcher) {}
 
   async run({
@@ -11,7 +11,7 @@ export class NewSearchStrategy implements IRagStrategy {
     options,
   }: {
     query: string;
-    options: EnhancedRagOptions;
+    options: EnhancedPDFRagOptions;
   }): Promise<{ nodes: NodeWithScore[] }> {
     const searchNodes = await this.searcher.performNewSearch(
       query,

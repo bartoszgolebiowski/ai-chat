@@ -1,6 +1,6 @@
 import { LLM } from "../../../models/llm";
-import { DecisionEngine } from "./decision-engine";
-import { QueryAnalysisEngine } from "./query-analysis-engine";
+import { ConfluenceDecisionEngine } from "./decision-engine";
+import { ConfluenceQueryAnalysisEngine } from "./query-analysis-engine";
 import { ConfluenceResponsePlanner } from "./response-planner";
 import { QueryAnalysisInput } from "./schemas";
 
@@ -9,13 +9,13 @@ export type AnalyzedQueryResult = ReturnType<
 >;
 
 export class QueryAnalyzerConfluence {
-  private queryAnalysisEngine: QueryAnalysisEngine;
-  private decisionEngine: DecisionEngine;
+  private queryAnalysisEngine: ConfluenceQueryAnalysisEngine;
+  private decisionEngine: ConfluenceDecisionEngine;
   private responsePlanner: ConfluenceResponsePlanner;
 
   constructor(llm: LLM) {
-    this.queryAnalysisEngine = new QueryAnalysisEngine(llm);
-    this.decisionEngine = new DecisionEngine(llm);
+    this.queryAnalysisEngine = new ConfluenceQueryAnalysisEngine(llm);
+    this.decisionEngine = new ConfluenceDecisionEngine(llm);
     this.responsePlanner = new ConfluenceResponsePlanner(llm);
   }
 

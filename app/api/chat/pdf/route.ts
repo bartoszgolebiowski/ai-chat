@@ -1,5 +1,5 @@
 import { conversationMemoryCache } from "@/lib/cache/conversation-memory-cache";
-import { ragEnginePDFEnhanced } from "@/lib/clients/rag/rag-engine-enhanced";
+import { ragEnginePDFEnhanced } from "@/lib/clients/rag/pdf/rag-engine-enhanced";
 import { createDataStreamResponse, LlamaIndexAdapter, UIMessage } from "ai";
 
 // Allow streaming responses up to 30 seconds

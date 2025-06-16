@@ -1,5 +1,5 @@
 import { NodeWithScore } from "llamaindex";
-import { Source } from "../llm/ResponseGeneratorBase";
+import { Source } from "../llm/response-generator-base";
 
 export interface ConversationTurn {
   id: string;

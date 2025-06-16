@@ -1,5 +1,5 @@
 import { EngineResponse, Metadata, NodeWithScore } from "llamaindex";
-import { Source } from "../../ResponseGeneratorBase";
+import { Source } from "../../response-generator-base";
 import { QueryAnalyzerConfluence } from "./query-analyzer";
 import { ConfluenceResponseGenerator } from "./response-generator";
 import { IRagStrategy } from "./strategies/IRagStrategy";
@@ -26,7 +26,7 @@ interface EnhancedRagResult {
   nodes: NodeWithScore[];
 }
 
-export class EnhancedRAGEngine {
+export class EnhancedConfluenceRAGEngine {
   constructor(
     private strategies: Record<string, IRagStrategy>,
     private responseGenerator: ConfluenceResponseGenerator,
@@ -38,11 +38,11 @@ export class EnhancedRAGEngine {
     options: EnhancedRagOptions = {}
   ): Promise<EnhancedRagResult> {
     const {
-      retrievalTopK = 20,
-      rerankTopK = 10,
+      retrievalTopK = 10,
+      rerankTopK = 8,
       rerankStrategy = "hybrid",
       contextAnalysisThreshold = 0.7,
-      maxContextNodes = 5,
+      maxContextNodes = 12,
       contextWeightFactor = 1.5,
       previousContext = [],
       selectedNodes = [],

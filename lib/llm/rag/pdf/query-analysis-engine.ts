@@ -22,7 +22,7 @@ export interface QueryAnalysisOutput {
 /**
  * Handles query analysis using AI to determine type and context dependency
  */
-export class QueryAnalysisEngine {
+export class PDFQueryAnalysisEngine {
   constructor(private llm: LLM) {}
 
   /**

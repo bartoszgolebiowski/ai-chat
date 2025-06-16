@@ -6,7 +6,7 @@ import { DecisionAnalysis, DecisionAnalysisSchema } from "./schemas";
 /**
  * Handles decision making using LLM-powered analysis
  */
-export class DecisionEngine {
+export class PDFDecisionEngine {
   constructor(private llm: LLM) {}
 
   /**

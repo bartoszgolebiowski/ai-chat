@@ -1,6 +1,6 @@
 import { createFilenameFilters } from "@/lib/tree/filter-converter";
 import { NodeWithScore } from "llamaindex";
-import { RagQueryEngine } from "../rag-query-engine";
+import { RagQueryEngine } from "./rag-query-engine";
 
 export class RagSearcher {
   constructor(private queryEngine: RagQueryEngine) {}

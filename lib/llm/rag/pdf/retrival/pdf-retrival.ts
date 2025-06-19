@@ -15,7 +15,7 @@ export class PdfRetrival {
     query: string,
     options: PdfRagEngineParams = {}
   ): Promise<{ nodes: NodeWithScore[] }> {
-    const { retrivalStrategy = "new" } = options;
+    const { retrivalStrategy = "new-search" } = options;
     const strategy = this.strategies[retrivalStrategy];
     if (!retrivalStrategy) {
       throw new Error(`Retrival strategy '${retrivalStrategy}' not found.`);

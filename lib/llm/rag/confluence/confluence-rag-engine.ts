@@ -1,5 +1,5 @@
 import { EngineResponse, NodeWithScore } from "llamaindex";
-import { Metadata } from "next";
+import { ChatHistory } from "../../cache/conversation-memory-cache";
 import { Source } from "../rag-response-sources";
 import { ConfluenceQueryPlanner } from "./confluence-query-planner";
 import { ConfluenceResponseGenerator } from "./confluence-response-generator";
@@ -10,16 +10,12 @@ export interface ConfluenceRagEngineParams {
   retrievalTopK?: number;
   rerankThreshold?: number;
   rerankStrategy?: "llm";
-  retrivalStrategy?: "new" | "context-only" | "new-and-context";
+  retrivalStrategy?: "new-search" | "context-only" | "new-search-and-context";
   contextAnalysisThreshold?: number;
   maxContextNodes?: number;
   contextWeightFactor?: number;
   selectedNodes?: string[];
-  previousContext?: {
-    userQuery: string;
-    userResponse: string;
-    contextNodes: NodeWithScore<Metadata>[];
-  }[];
+  previousContext?: ChatHistory;
 }
 
 interface ConfluenceRagEngineResult {
@@ -70,6 +66,7 @@ export class ConfluenceRagEngine {
         retrievalTopK,
         rerankThreshold,
         rerankStrategy,
+        retrivalStrategy: decision.strategy,
         contextAnalysisThreshold,
         maxContextNodes,
         contextWeightFactor,
@@ -84,6 +81,7 @@ export class ConfluenceRagEngine {
         query: userQuery,
         nodes: retrievedNodes,
         analysisResult,
+        previousContext,
       });
 
     return {

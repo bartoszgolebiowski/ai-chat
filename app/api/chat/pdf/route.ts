@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       const ragResult = await pdfDocumentRagEngine.execute(lastUserQuery, {
         previousContext: conversationHistory?.turns.map((turn) => ({
           userQuery: turn.userQuery,
-          userResponse: turn.response,
+          chatResponse: turn.response,
           contextNodes: turn.nodes,
         })),
         selectedNodes: selectedNodes,

@@ -1,4 +1,5 @@
-import { MetadataMode, SimpleChatEngine } from "llamaindex";
+import { MetadataMode, NodeWithScore, SimpleChatEngine } from "llamaindex";
+import { ChatHistory } from "../../cache/conversation-memory-cache";
 import {
   GenerateResponseInput,
   ResponseSources,
@@ -6,7 +7,7 @@ import {
 } from "../rag-response-sources";
 import { PdfQueryAnalyzerResult } from "./pdf-schemas";
 
-export class PdfResponseGenerator extends ResponseSources {
+export class PdfResponseGenerator {
   private static readonly SYSTEM_PROMPT = `
 You are an AI assistant specialized in analyzing tender specification documents. Your primary function is to process and understand the content of PDF documents, which contain detailed specifications for a solution in a tender process. You must base all your answers, summaries, and analyses strictly on the information contained within these provided documents.
 
@@ -18,28 +19,25 @@ When a user asks a question or gives a command:
 Your goal is to help the user understand the tender specifications thoroughly and accurately based on the supplied documents.
 `;
 
-  constructor(private chatEngine: SimpleChatEngine) {
-    super();
-  }
+  constructor(private chatEngine: SimpleChatEngine) {}
 
   async generateStreamingResponse(
     input: GenerateResponseInput & {
       analysisResult: PdfQueryAnalyzerResult;
+      previousContext: ChatHistory;
     }
   ): Promise<StreamingResponseResult> {
-    const { query, nodes, analysisResult } = input;
-    const contents = nodes.map((node) =>
-      node.node.getContent(MetadataMode.NONE)
-    );
+    const { query, nodes, analysisResult, previousContext } = input;
 
     const contextualPrompt = this.buildContextualPrompt(
       query,
-      contents,
-      analysisResult
+      nodes,
+      analysisResult,
+      previousContext
     );
 
     return {
-      sources: [],
+      sources: ResponseSources.extractSources(nodes),
       stream: await this.chatEngine.chat({
         message: contextualPrompt,
         stream: true,
@@ -52,10 +50,15 @@ Your goal is to help the user understand the tender specifications thoroughly an
    */
   protected buildContextualPrompt(
     query: string,
-    documents: string[],
-    analysisResult: PdfQueryAnalyzerResult
+    nodes: NodeWithScore[],
+    analysisResult: PdfQueryAnalyzerResult,
+    previousContext: ChatHistory
   ): string {
-    const document_context = documents.join("\n\n");
+    const contents = nodes.map((node) =>
+      node.node.getContent(MetadataMode.NONE)
+    );
+
+    const document_context = contents.join("\n\n");
     const user_query = query;
     const { responsePlan } = analysisResult;
 
@@ -71,6 +74,18 @@ Given the following excerpts from the tender specification documents:
 <document excerpts>
 ${document_context}
 </document excerpts>
+
+And the previous conversation history, if applicable:
+<history>
+${previousContext
+  .map((message, index) => {
+    return `<message id="${index}">
+      <user>${message.userQuery}</user>
+      <assistant>${message.chatResponse}</assistant>
+    </message>`;
+  })
+  .join("\n")}
+</history>
 
 And considering the user's request:
 \`${user_query}\`

@@ -9,7 +9,6 @@ export class ConfluenceCombineRetrievalStrategy
   implements IConfluenceRetrievalStrategy
 {
   constructor(
-    private contextManager: RagContextManager,
     private searcher: RagRetrivalFacade,
     private reranker: ConfluenceReranker
   ) {}
@@ -25,11 +24,11 @@ export class ConfluenceCombineRetrievalStrategy
       options.retrievalTopK || 20,
       options.selectedNodes ? options.selectedNodes : []
     );
-    const contextNodes = this.contextManager.extractNodesFromContext(
+    const contextNodes = RagContextManager.extractNodesFromContext(
       options.previousContext,
       options.maxContextNodes || 5
     );
-    const combinedNodes = this.contextManager.combineAndDeduplicateNodes(
+    const combinedNodes = RagContextManager.combineAndDeduplicateNodes(
       contextNodes,
       newNodes
     );

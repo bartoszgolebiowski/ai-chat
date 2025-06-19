@@ -1,4 +1,9 @@
-import { MetadataMode, SimpleChatEngine } from "llamaindex";
+import {
+  MetadataMode,
+  NodeWithScore,
+  SimpleChatEngine
+} from "llamaindex";
+import { ChatHistory } from "../../cache/conversation-memory-cache";
 import {
   GenerateResponseInput,
   ResponseSources,
@@ -6,7 +11,7 @@ import {
 } from "../rag-response-sources";
 import { CombinedOutput } from "./confluence-schemas";
 
-export class ConfluenceResponseGenerator extends ResponseSources {
+export class ConfluenceResponseGenerator {
   private static readonly SYSTEM_PROMPT = `
 Jesteś asystentem AI wyspecjalizowanym w analizie i wyszukiwaniu informacji w dokumentacji Confluence. Twoim głównym zadaniem jest przetwarzanie i rozumienie treści stron Confluence, które zawierają szczegółowe informacje i procedury organizacyjne. Twoje odpowiedzi powinny być oparte przede wszystkim na informacjach zawartych w dostarczonych fragmentach dokumentów.
 
@@ -19,28 +24,25 @@ Gdy użytkownik zadaje pytanie lub wydaje polecenie:
 Twoim celem jest udzielenie odpowiedzi użytkownikowi na podstawie dostarczonych materiałów, włączając w to wyciąganie logicznych wniosków, gdy jest to uzasadnione.
 `;
 
-  constructor(private chatEngine: SimpleChatEngine) {
-    super();
-  }
+  constructor(private chatEngine: SimpleChatEngine) {}
 
   async generateStreamingResponse(
     input: GenerateResponseInput & {
       analysisResult: Awaited<CombinedOutput>;
+      previousContext: ChatHistory;
     }
   ): Promise<StreamingResponseResult> {
-    const { query, nodes, analysisResult } = input;
-    const contents = nodes.map((node) =>
-      node.node.getContent(MetadataMode.NONE)
-    );
+    const { query, nodes, analysisResult, previousContext } = input;
 
     const contextualPrompt = this.buildContextualPrompt(
       query,
-      contents,
-      analysisResult
+      nodes,
+      analysisResult,
+      previousContext
     );
 
     return {
-      sources: this.extractSources(nodes),
+      sources: ResponseSources.extractSources(nodes),
       stream: await this.chatEngine.chat({
         message: contextualPrompt,
         stream: true,
@@ -53,28 +55,40 @@ Twoim celem jest udzielenie odpowiedzi użytkownikowi na podstawie dostarczonych
    */
   protected buildContextualPrompt(
     query: string,
-    documents: string[],
-    analysisResult: CombinedOutput
+    nodes: NodeWithScore[],
+    analysisResult: CombinedOutput,
+    previousContext: ChatHistory
   ): string {
-    const dokumenty = documents.join("\n\n");
-    const zapytanie = query;
-    const { responsePlan } = analysisResult;
+    const documents = nodes.map((node) =>
+      node.node.getContent(MetadataMode.NONE)
+    );
 
-    // Sekcja analizy
-    const analizaKontekstu = this.buildAnalysisContext(analysisResult);
+    const { responsePlan } = analysisResult;
 
     return `
 ${ConfluenceResponseGenerator.SYSTEM_PROMPT}
 
-${analizaKontekstu}
+${this.buildAnalysisContext(analysisResult)}
 
 Na podstawie poniższych fragmentów stron Confluence:
 <fragmenty dokumentów>
-${dokumenty}
+${documents.join("\n\n")}
 </fragmenty dokumentów>
 
+Oraz wcześniejszej historii zapytań i odpowiedzi, jeśli dotyczy:
+<historia>
+${previousContext
+  .map((message, index) => {
+    return `<message id="${index}">
+      <user>${message.userQuery}</user>
+      <assistant>${message.chatResponse}</assistant>
+    </message>`;
+  })
+  .join("\n")}
+</historia>
+
 Oraz biorąc pod uwagę zapytanie użytkownika:
-\`${zapytanie}\`
+\`${query}\`
 
 Wykonaj następujące:
 1. Przeanalizuj zapytanie użytkownika, uwzględniając powyższą analizę.
@@ -82,7 +96,7 @@ Wykonaj następujące:
 3. ${this.getFormatGuidance(responsePlan.formatType)}
 4. Jeśli fragmenty są niewystarczające do pełnej odpowiedzi, jasno wskaż, czego brakuje lub czego nie można znaleźć w podanym kontekście. Nie wymyślaj informacji i nie korzystaj z wiedzy spoza dokumentów.
 
-Zapytanie użytkownika: \`${zapytanie}\`
+Zapytanie użytkownika: \`${query}\`
 Twoja odpowiedź (oparta *wyłącznie* na dostarczonych fragmentach):
 `;
   }

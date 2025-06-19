@@ -4,15 +4,13 @@ import { PdfRagEngineParams } from "../pdf-rag-engine";
 import { IPdfRetrievalStrategy } from "./pdf-retrieval-strategy.interface";
 
 export class PdfContextOnlyRetrievalStrategy implements IPdfRetrievalStrategy {
-  constructor(private contextManager: RagContextManager) {}
-
   async run({
     options,
   }: {
     query: string;
     options: PdfRagEngineParams;
   }): Promise<{ nodes: NodeWithScore[] }> {
-    const finalNodes = this.contextManager.extractNodesFromContext(
+    const finalNodes = RagContextManager.extractNodesFromContext(
       options.previousContext,
       options.maxContextNodes || 5
     );

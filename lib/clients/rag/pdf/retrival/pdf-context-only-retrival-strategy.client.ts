@@ -1,6 +1,3 @@
 import { PdfContextOnlyRetrievalStrategy } from "@/lib/llm/rag/pdf/retrival/pdf-context-only-retrival-strategy";
-import { ragContextManager } from "../../../rag-context-manager";
 
-export const pdfContextOnlyRetrieval = new PdfContextOnlyRetrievalStrategy(
-  ragContextManager
-);
+export const pdfContextOnlyRetrieval = new PdfContextOnlyRetrievalStrategy();

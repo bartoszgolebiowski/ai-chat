@@ -6,14 +6,13 @@ import { IConfluenceRetrievalStrategy } from "./confluence-retrieval-strategy.in
 export class ConfluenceContextOnlyRetrievalStrategy
   implements IConfluenceRetrievalStrategy
 {
-  constructor(private contextManager: RagContextManager) {}
   async run({
     options,
   }: {
     query: string;
     options: ConfluenceRagEngineParams;
   }): Promise<{ nodes: NodeWithScore[] }> {
-    const finalNodes = this.contextManager.extractNodesFromContext(
+    const finalNodes = RagContextManager.extractNodesFromContext(
       options.previousContext,
       options.maxContextNodes || 5
     );

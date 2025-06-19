@@ -1,7 +1,7 @@
 import { NodeWithScore } from "llamaindex";
 
 export class RagContextManager {
-  extractNodesFromContext(
+  static extractNodesFromContext(
     previousContext: {
       contextNodes: NodeWithScore[];
     }[] = [],
@@ -16,7 +16,7 @@ export class RagContextManager {
       .slice(0, maxNodes);
   }
 
-  combineAndDeduplicateNodes(
+  static combineAndDeduplicateNodes(
     contextNodes: NodeWithScore[],
     newNodes: NodeWithScore[]
   ): NodeWithScore[] {

@@ -1,3 +1,1 @@
-import { RagContextManager } from "../llm/rag/rag-context-manager";
-
-export const ragContextManager = new RagContextManager();
+// No need to export an instance anymore. Remove this file if not used elsewhere.

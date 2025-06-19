@@ -1,4 +1,5 @@
 import { NodeWithScore } from "llamaindex";
+import { Metadata } from "next";
 import { Source } from "../rag/rag-response-sources";
 
 export interface ConversationTurn {
@@ -16,6 +17,12 @@ export interface ConversationHistory {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type ChatHistory = {
+  userQuery: string;
+  chatResponse: string;
+  contextNodes: NodeWithScore<Metadata>[];
+}[];
 
 export class ConversationMemoryCache {
   private cache = new Map<string, ConversationHistory>();

@@ -1,5 +1,5 @@
 import { EngineResponse, NodeWithScore } from "llamaindex";
-import { Metadata } from "next";
+import { ChatHistory } from "../../cache/conversation-memory-cache";
 import { Source } from "../rag-response-sources";
 import { PdfQueryPlanner } from "./pdf-query-planner";
 import { PdfQueryRewriter } from "./pdf-query-rewriter";
@@ -11,16 +11,12 @@ export interface PdfRagEngineParams {
   retrievalTopK?: number;
   rerankThreshold?: number;
   rerankStrategy?: "llm";
-  retrivalStrategy?: "new" | "context-only" | "new-and-context";
+  retrivalStrategy?: "new-search" | "context-only" | "new-search-and-context";
   contextAnalysisThreshold?: number;
   maxContextNodes?: number;
   contextWeightFactor?: number;
   selectedNodes?: string[];
-  previousContext?: {
-    userQuery: string;
-    userResponse: string;
-    contextNodes: NodeWithScore<Metadata>[];
-  }[];
+  previousContext?: ChatHistory;
 }
 
 interface PdfRagEngineResult {
@@ -81,6 +77,7 @@ export class PdfRagEngine {
         retrievalTopK,
         rerankThreshold,
         rerankStrategy,
+        retrivalStrategy: decision.strategy,
         contextAnalysisThreshold,
         maxContextNodes,
         contextWeightFactor,
@@ -95,6 +92,7 @@ export class PdfRagEngine {
         query: userQuery,
         nodes: retrievedNodes,
         analysisResult,
+        previousContext
       });
 
     return {

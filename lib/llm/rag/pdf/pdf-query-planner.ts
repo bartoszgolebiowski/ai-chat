@@ -1,15 +1,12 @@
 import { generateObject } from "ai";
-import { Metadata, MetadataMode, NodeWithScore } from "llamaindex";
+import { MetadataMode } from "llamaindex";
 import { LLM } from "../../../models/llm";
+import { ChatHistory } from "../../cache/conversation-memory-cache";
 import { CombinedSchema, PdfQueryAnalyzerResult } from "./pdf-schemas";
 
 interface PdfQueryPlannerParams {
   userQuery: string;
-  previousContext?: {
-    userQuery: string;
-    userResponse: string;
-    contextNodes: NodeWithScore<Metadata>[];
-  }[];
+  previousContext?: ChatHistory;
 }
 
 export class PdfQueryPlanner {
@@ -65,7 +62,7 @@ ${contextSummary}
         .join("\n");
       return `Turn ${index + 1}:
 Query: ${context.userQuery}
-Response: ${context.userResponse.substring(0, 300)}...
+Response: ${context.chatResponse.substring(0, 300)}...
 Sources: ${nodeContents || "No sources"}`;
     });
     return summaries.join("\n\n");

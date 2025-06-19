@@ -21,7 +21,7 @@ export class ResponseSources {
   /**
    * Extract sources from nodes
    */
-  public extractSources(nodes: NodeWithScore[]): Source[] {
+  public static extractSources(nodes: NodeWithScore[]): Source[] {
     return nodes.map((node) => {
       const id = node.node.id_;
       const fileName = node.node.metadata.filename || "Unknown";
@@ -29,13 +29,13 @@ export class ResponseSources {
       return {
         id,
         sourceType: "url" as const,
-        title: this.extractTitle(fileName),
-        url: this.extractURL(fileName),
+        title: ResponseSources.extractTitle(fileName),
+        url: ResponseSources.extractURL(fileName),
       };
     });
   }
 
-  private extractTitle(fileName: string): string {
+  private static extractTitle(fileName: string): string {
     const match = fileName.match(/^(.*?)(?:_\d+)?\.md$/);
     if (match) {
       return match[1].replace(/-/g, " ").trim();
@@ -53,12 +53,12 @@ export class ResponseSources {
   /**
    * Extract URL from file name
    */
-  private extractURL(fileName: string): string {
-    const id = this.extractIdFromPageId(fileName);
+  private static extractURL(fileName: string): string {
+    const id = ResponseSources.extractIdFromPageId(fileName);
     return `https://connect.ttpsc.com/confluence/spaces/TTPSC/pages/${id}`;
   }
 
-  private extractIdFromPageId(pageId: string): string {
+  private static extractIdFromPageId(pageId: string): string {
     const match = pageId.match(/_(\d+)\.md$/);
     if (match) {
       return match[1];

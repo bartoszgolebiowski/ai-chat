@@ -5,12 +5,15 @@ import { confluenceNewSearchRetrival } from "./confluence-new-retrival-strategy.
 
 export const confluenceRerivalStrategies = new ConfluenceRetrival();
 
-confluenceRerivalStrategies.registerStrategy("new", confluenceNewSearchRetrival);
+confluenceRerivalStrategies.registerStrategy(
+  "new-search",
+  confluenceNewSearchRetrival
+);
 confluenceRerivalStrategies.registerStrategy(
   "context-only",
   confluenceContextOnlyRetrival
 );
 confluenceRerivalStrategies.registerStrategy(
-  "new-and-context",
+  "new-search-and-context",
   confluenceCombineRetrival
 );

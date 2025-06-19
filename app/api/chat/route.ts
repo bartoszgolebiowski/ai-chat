@@ -15,8 +15,6 @@ export async function POST(req: Request) {
     `Confluence Chat ${id}: Received ${messages.length} messages for processing`
   );
 
-  console.log(`Length of the selected nodes: ${[].length}`);
-
   return createDataStreamResponse({
     status: 200,
     statusText: "OK",
@@ -30,10 +28,9 @@ export async function POST(req: Request) {
         const ragResult = await ragEngineConfluenceEnhanced.execute(userQuery, {
           previousContext: conversationHistory?.turns.map((turn) => ({
             userQuery: turn.userQuery,
-            userResponse: turn.response,
+            chatResponse: turn.response,
             contextNodes: turn.nodes,
           })),
-          selectedNodes: [],
         });
 
         LlamaIndexAdapter.mergeIntoDataStream(ragResult.stream, {

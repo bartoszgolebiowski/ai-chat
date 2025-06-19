@@ -1,17 +1,14 @@
 import { generateObject } from "ai";
-import { Metadata, MetadataMode, NodeWithScore } from "llamaindex";
+import { MetadataMode } from "llamaindex";
 import { LLM } from "../../../models/llm";
+import { ChatHistory } from "../../cache/conversation-memory-cache";
 import { CombinedOutput, CombinedSchema } from "./confluence-schemas";
 
 // Combined schema for LLM output
 
 interface QueryAnalysisInput {
   query: string;
-  previousContext?: {
-    userQuery: string;
-    userResponse: string;
-    contextNodes: NodeWithScore<Metadata>[];
-  }[];
+  previousContext?: ChatHistory;
 }
 
 export class ConfluenceQueryPlanner {
@@ -68,7 +65,7 @@ Odpowiedź powinna być w języku polskim.
         .join("\n");
       return `Turn ${index + 1}:
 Zapytanie: "${context.userQuery}"
-Odpowiedz: "${context.userResponse.substring(0, 300)}..."
+Odpowiedz: "${context.chatResponse.substring(0, 300)}..."
 Zródła: ${nodeContents || "No sources"}`;
     });
     return summaries.join("\n\n");

@@ -1,5 +1,5 @@
-import { conversationMemoryCache } from "@/lib/cache/conversation-memory-cache";
-import { ragEnginePDFEnhanced } from "@/lib/clients/rag/pdf/rag-engine-enhanced";
+import { pdfDocumentRagEngine } from "@/lib/clients/rag/pdf/pdf-rag-engine";
+import { conversationMemoryCache } from "@/lib/llm/cache/conversation-memory-cache";
 import { createDataStreamResponse, LlamaIndexAdapter, UIMessage } from "ai";
 
 // Allow streaming responses up to 30 seconds
@@ -22,19 +22,16 @@ export async function POST(req: Request) {
     status: 200,
     statusText: "OK",
     async execute(dataStream) {
-      const userQuery = messages[messages.length - 1].content;
+      const lastUserQuery = messages[messages.length - 1].content;
 
       // Get conversation history from cache
       const conversationHistory = conversationMemoryCache.getConversation(id);
 
-      const ragResult = await ragEnginePDFEnhanced.execute(userQuery, {
-        retrievalTopK: 10,
-        rerankTopK: 5,
-        rerankStrategy: "hybrid",
+      const ragResult = await pdfDocumentRagEngine.execute(lastUserQuery, {
         previousContext: conversationHistory?.turns.map((turn) => ({
-          query: turn.userQuery,
-          response: turn.response,
-          nodes: turn.nodes,
+          userQuery: turn.userQuery,
+          userResponse: turn.response,
+          contextNodes: turn.nodes,
         })),
         selectedNodes: selectedNodes,
       });
@@ -43,11 +40,10 @@ export async function POST(req: Request) {
         dataStream,
         callbacks: {
           onFinal: (response) => {
-
             // Store the complete conversation turn in memory cache
             conversationMemoryCache.addTurn(
               id,
-              userQuery,
+              lastUserQuery,
               response,
               ragResult.nodes,
               ragResult.sources

@@ -1,6 +1,6 @@
 "use client";
 
-import { TreeViewComponent, useTreeState } from "@/components/tree";
+import { useTreeState } from "@/components/tree";
 import {
   ChatInput,
   ChatInputSubmit,
@@ -19,22 +19,18 @@ export default function Page() {
   const { tree, toggleNode, toggleExpand, selectedNodes } = useTreeState([
     confluenceTree,
   ]);
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    body: {
-      selectedNodes,
-    },
-  });
+  const { messages, input, handleInputChange, handleSubmit } = useChat({});
 
   return (
     <div className="flex h-screen">
       {/* Left sidebar with tree */}
-      <div className="w-120 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+      {/* <div className="w-120 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-shrink-0">
         <TreeViewComponent
           nodes={tree}
           onToggle={toggleNode}
           onToggleExpand={toggleExpand}
         />
-      </div>
+      </div> */}
 
       {/* Main chat area */}
       <div className="flex-1 flex flex-col">

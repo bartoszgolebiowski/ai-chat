@@ -1,14 +1,15 @@
 import { NodeWithScore } from "llamaindex";
-import { EnhancedRagOptions } from "./confluence/engine";
 
 export class RagContextManager {
   extractNodesFromContext(
-    previousContext: EnhancedRagOptions["previousContext"] = [],
+    previousContext: {
+      contextNodes: NodeWithScore[];
+    }[] = [],
     maxNodes: number
   ): NodeWithScore[] {
     const allNodes: NodeWithScore[] = [];
     previousContext.forEach((context) => {
-      allNodes.push(...context.nodes);
+      allNodes.push(...context.contextNodes);
     });
     return allNodes
       .sort((a, b) => (b.score || 0) - (a.score || 0))

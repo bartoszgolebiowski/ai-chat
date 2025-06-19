@@ -1,7 +1,7 @@
-import { PdfCombineRetrievalStrategy } from "@/lib/llm/rag/pdf/strategies/pdf-combine-retrieval-strategy";
+import { PdfCombineRetrievalStrategy } from "@/lib/llm/rag/pdf/retrival/pdf-combine-retrieval-strategy";
 import { ragContextManager } from "../../../rag-context-manager";
 import { pdfRagSearcher } from "../pdf-rag-retrival-facade";
-import { pdfReranker } from "../pdf-reranker";
+import { pdfReranker } from "../reranker/pdf-reranker.client";
 
 export const pdfCombinedSearchRetrival = new PdfCombineRetrievalStrategy(
   ragContextManager,

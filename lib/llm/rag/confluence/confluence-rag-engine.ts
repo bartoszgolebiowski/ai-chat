@@ -40,7 +40,7 @@ export class ConfluenceRagEngine {
     options: ConfluenceRagEngineParams = {}
   ): Promise<ConfluenceRagEngineResult> {
     const {
-      retrievalTopK = 20,
+      retrievalTopK = 30,
       rerankThreshold = 0.5,
       rerankStrategy = "llm",
       contextAnalysisThreshold = 0.7,

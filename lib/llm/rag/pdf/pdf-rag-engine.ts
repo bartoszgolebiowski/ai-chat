@@ -4,7 +4,7 @@ import { Source } from "../rag-response-sources";
 import { PdfQueryPlanner } from "./pdf-query-planner";
 import { PdfQueryRewriter } from "./pdf-query-rewriter";
 import { PdfResponseGenerator } from "./pdf-response-generator";
-import { PdfRetrival } from "./strategies/pdf-retrival";
+import { PdfRetrival } from "./retrival/pdf-retrival";
 
 // Enhanced interfaces
 export interface PdfRagEngineParams {

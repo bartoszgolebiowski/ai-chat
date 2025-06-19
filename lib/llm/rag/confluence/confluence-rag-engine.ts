@@ -3,13 +3,14 @@ import { Metadata } from "next";
 import { Source } from "../rag-response-sources";
 import { ConfluenceQueryPlanner } from "./confluence-query-planner";
 import { ConfluenceResponseGenerator } from "./confluence-response-generator";
-import { IConfluenceRetrievalStrategy } from "./strategies/confluence-retrieval-strategy.interface";
+import { ConfluenceRetrival } from "./retrival/confluence-retrival";
 
 // Enhanced interfaces
 export interface ConfluenceRagEngineParams {
   retrievalTopK?: number;
   rerankThreshold?: number;
   rerankStrategy?: "llm";
+  retrivalStrategy?: "new" | "context-only" | "new-and-context";
   contextAnalysisThreshold?: number;
   maxContextNodes?: number;
   contextWeightFactor?: number;
@@ -29,7 +30,7 @@ interface ConfluenceRagEngineResult {
 
 export class ConfluenceRagEngine {
   constructor(
-    private retrievalStrategies: Record<string, IConfluenceRetrievalStrategy>,
+    private retrievalStrategies: ConfluenceRetrival,
     private readonly confluenceResponseGenerator: ConfluenceResponseGenerator,
     private readonly confluenceQueryPlanner: ConfluenceQueryPlanner
   ) {}
@@ -63,14 +64,9 @@ export class ConfluenceRagEngine {
       `Response Plan: ${responsePlan.sourcingStrategy} sourcing, ${responsePlan.formatType} format`
     );
 
-    // Use strategy pattern
-    const strategy = this.retrievalStrategies[decision.strategy];
-
-    if (!strategy) throw new Error(`Unknown decision: ${decision}`);
-
-    const { nodes: retrievedNodes } = await strategy.run({
-      query: userQuery,
-      options: {
+    const { nodes: retrievedNodes } = await this.retrievalStrategies.retrieve(
+      userQuery,
+      {
         retrievalTopK,
         rerankThreshold,
         rerankStrategy,
@@ -79,8 +75,8 @@ export class ConfluenceRagEngine {
         contextWeightFactor,
         previousContext,
         selectedNodes,
-      },
-    });
+      }
+    );
 
     // Generate streaming response with enhanced context
     const { stream, sources } =

@@ -2,7 +2,7 @@ import { NodeWithScore } from "llamaindex";
 import { RagContextManager } from "../../rag-context-manager";
 import { RagRetrivalFacade } from "../../rag-retrieve-facade";
 import { ConfluenceRagEngineParams } from "../confluence-rag-engine";
-import { ConfluenceReranker } from "../confluence-reranker";
+import { ConfluenceReranker } from "../reranker/confluence-reranker";
 import { IConfluenceRetrievalStrategy } from "./confluence-retrieval-strategy.interface";
 
 export class ConfluenceCombineRetrievalStrategy

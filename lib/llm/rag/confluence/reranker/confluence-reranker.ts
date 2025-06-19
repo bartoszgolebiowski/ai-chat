@@ -1,9 +1,8 @@
-import { LLM } from "@/lib/models/llm";
 import { NodeWithScore } from "llamaindex";
-import { ConfluenceLlmReranker } from "./confluence-reranker-llm";
+import { IConfluenceRerankerStrategy } from "./confluence-reranker.interface";
 
 interface RerankingOptions {
-  strategy?: "llm";
+  strategy?: string;
   threshold?: number;
 }
 
@@ -14,7 +13,16 @@ interface RerankingResult {
 }
 
 export class ConfluenceReranker {
-  constructor(private llm: LLM) {}
+  private strategies: Record<string, IConfluenceRerankerStrategy> = {};
+
+  constructor() {}
+
+  /**
+   * Register a new reranking strategy
+   */
+  registerStrategy(name: string, strategy: IConfluenceRerankerStrategy) {
+    this.strategies[name] = strategy;
+  }
 
   /**
    * Rerank nodes based on the selected strategy
@@ -24,13 +32,13 @@ export class ConfluenceReranker {
     nodes: NodeWithScore[],
     options: RerankingOptions = {}
   ): Promise<RerankingResult> {
-    const { strategy, threshold = 0.5 } = options;
-
+    const { strategy = "llm", threshold = 0.5 } = options;
+    const reranker = this.strategies[strategy];
+    if (!reranker) {
+      throw new Error(`Reranking strategy '${strategy}' not found.`);
+    }
     console.log(`Reranking ${nodes.length} nodes using ${strategy} strategy`);
-
-    const llmReranker = new ConfluenceLlmReranker(this.llm);
-    const rerankedNodes = await llmReranker.rerank(query, nodes, threshold);
-
+    const rerankedNodes = await reranker.rerank(query, nodes, threshold);
     return {
       nodes: rerankedNodes,
       originalCount: nodes.length,

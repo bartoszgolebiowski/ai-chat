@@ -3,9 +3,9 @@ import { z } from "zod";
 
 export const ConfluenceDecisionAnalysisSchema = z.object({
   strategy: z
-    .enum(["context-only", "new-search", "hybrid"])
+    .enum(["new-search", "context-only", "new-search-and-context"])
     .describe(
-      "Wybrana strategia odpowiedzi: tylko kontekst, nowe wyszukiwanie lub hybryda."
+      "Wybrana strategia odpowiedzi: tylko kontekst, nowe wyszukiwanie lub oba podejścia."
     ),
   confidence: z
     .number()

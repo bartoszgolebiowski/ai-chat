@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const DecisionAnalysisSchema = z.object({
   strategy: z
-    .enum(["context-only", "new-search", "hybrid", "context-only"])
+    .enum(["new-search", "context-only", "new-search-and-context"])
     .describe(
       "The approach chosen for answering the query: use only context, perform a new search, or combine both."
     ),

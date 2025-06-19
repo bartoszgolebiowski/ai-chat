@@ -1,9 +1,8 @@
-import { LLM } from "@/lib/models/llm";
 import { NodeWithScore } from "llamaindex";
-import { PdfLlmReranker } from "./pdf-reranker-llm";
+import { IPdfRerankerStrategy } from "./pdf-reranker.interface";
 
 interface RerankingOptions {
-  strategy?: "llm";
+  strategy?: string;
   threshold?: number;
 }
 
@@ -14,7 +13,16 @@ interface RerankingResult {
 }
 
 export class PdfReranker {
-  constructor(private llm: LLM) {}
+  private strategies: Record<string, IPdfRerankerStrategy> = {};
+
+  constructor() {}
+
+  /**
+   * Register a new reranking strategy
+   */
+  registerStrategy(name: string, strategy: IPdfRerankerStrategy) {
+    this.strategies[name] = strategy;
+  }
 
   /**
    * Rerank nodes based on the selected strategy
@@ -24,13 +32,13 @@ export class PdfReranker {
     nodes: NodeWithScore[],
     options: RerankingOptions = {}
   ): Promise<RerankingResult> {
-    const { strategy, threshold = 0.5 } = options;
-
+    const { strategy = "llm", threshold = 0.5 } = options;
+    const reranker = this.strategies[strategy];
+    if (!reranker) {
+      throw new Error(`Reranking strategy '${strategy}' not found.`);
+    }
     console.log(`Reranking ${nodes.length} nodes using ${strategy} strategy`);
-
-    const llmReranker = new PdfLlmReranker(this.llm);
-    const rerankedNodes = await llmReranker.rerank(query, nodes, threshold);
-
+    const rerankedNodes = await reranker.rerank(query, nodes, threshold);
     return {
       nodes: rerankedNodes,
       originalCount: nodes.length,

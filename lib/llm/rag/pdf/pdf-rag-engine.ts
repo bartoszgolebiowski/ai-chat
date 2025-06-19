@@ -4,13 +4,14 @@ import { Source } from "../rag-response-sources";
 import { PdfQueryPlanner } from "./pdf-query-planner";
 import { PdfQueryRewriter } from "./pdf-query-rewriter";
 import { PdfResponseGenerator } from "./pdf-response-generator";
-import { IPdfRetrievalStrategy } from "./strategies/pdf-retrieval-strategy.interface";
+import { PdfRetrival } from "./strategies/pdf-retrival";
 
 // Enhanced interfaces
 export interface PdfRagEngineParams {
   retrievalTopK?: number;
   rerankThreshold?: number;
   rerankStrategy?: "llm";
+  retrivalStrategy?: "new" | "context-only" | "new-and-context";
   contextAnalysisThreshold?: number;
   maxContextNodes?: number;
   contextWeightFactor?: number;
@@ -35,7 +36,7 @@ interface PdfRagEngineResult {
  */
 export class PdfRagEngine {
   constructor(
-    private retrievalStrategies: Record<string, IPdfRetrievalStrategy>,
+    private retrievalStrategies: PdfRetrival,
     private readonly pdfResponseGenerator: PdfResponseGenerator,
     private readonly pdfQueryAnalyzer: PdfQueryPlanner,
     private readonly pdfQueryReformulator: PdfQueryRewriter
@@ -74,14 +75,9 @@ export class PdfRagEngine {
       `Response Plan: ${responsePlan.sourcingStrategy} sourcing, ${responsePlan.formatType} format`
     );
 
-    // Use strategy pattern
-    const strategy = this.retrievalStrategies[decision.strategy];
-
-    if (!strategy) throw new Error(`Unknown decision: ${decision}`);
-
-    const { nodes: retrievedNodes } = await strategy.run({
-      query: userQuery,
-      options: {
+    const { nodes: retrievedNodes } = await this.retrievalStrategies.retrieve(
+      userQuery,
+      {
         retrievalTopK,
         rerankThreshold,
         rerankStrategy,
@@ -90,8 +86,8 @@ export class PdfRagEngine {
         contextWeightFactor,
         previousContext,
         selectedNodes,
-      },
-    });
+      }
+    );
 
     // Generate streaming response with enhanced context
     const { stream, sources } =

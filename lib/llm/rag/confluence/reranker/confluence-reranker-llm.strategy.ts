@@ -2,8 +2,11 @@ import { LLM } from "@/lib/models/llm";
 import { generateObject } from "ai";
 import { MetadataMode, NodeWithScore } from "llamaindex";
 import { z } from "zod";
+import { IConfluenceRerankerStrategy } from "./confluence-reranker.interface";
 
-export class ConfluenceLlmReranker {
+export class ConfluenceLlmRerankerStrategy
+  implements IConfluenceRerankerStrategy
+{
   constructor(private llm: LLM) {}
 
   /**

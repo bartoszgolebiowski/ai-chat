@@ -54,41 +54,31 @@ Your goal is to help the user understand the tender specifications thoroughly an
     analysisResult: PdfQueryAnalyzerResult,
     previousContext: ChatHistory
   ): string {
-    const contents = nodes.map((node) =>
-      node.node.getContent(MetadataMode.NONE)
-    );
-
-    const document_context = contents.join("\n\n");
     const user_query = query;
     const { responsePlan } = analysisResult;
-
-    // Build analysis context section
-    const analysisContext = this.buildAnalysisContext(analysisResult);
 
     return `
 ${PdfResponseGenerator.SYSTEM_PROMPT}
 
-${analysisContext}
+The following comprehensive analysis has been performed on the user's query:
+<query_analysis>
+${this.buildAnalysisContext(analysisResult)}
+</query_analysis>
 
 Given the following excerpts from the tender specification documents:
-<document excerpts>
-${document_context}
-</document excerpts>
+<document_excerpts>
+${this.buildDocumentExcerpts(nodes)}
+</document_excerpts>
 
 And the previous conversation history, if applicable:
 <history>
-${previousContext
-  .map((message, index) => {
-    return `<message id="${index}">
-      <user>${message.userQuery}</user>
-      <assistant>${message.chatResponse}</assistant>
-    </message>`;
-  })
-  .join("\n")}
+${this.buildHistoryContext(previousContext)}
 </history>
 
 And considering the user's request:
-\`${user_query}\`
+<user_request>
+${user_query}
+</user_request>
 
 Please perform the following:
 1.  Analyze the user's request carefully, taking into account the query analysis insights provided above.
@@ -96,9 +86,31 @@ Please perform the following:
 3.  ${this.getFormatGuidance(responsePlan.formatType)}
 4.  If the provided excerpts are insufficient to fully address the user's request, clearly state what information is missing or cannot be found within the given context. Do not invent information or use external knowledge.
 
-User Request: \`${user_query}\`
+<user_request>
+${user_query}
+</user_request>
+
 Your Response based *only* on the provided document excerpts:
 `;
+  }
+
+  private buildDocumentExcerpts(nodes: NodeWithScore[]) {
+    const contents = nodes.map((node) =>
+      node.node.getContent(MetadataMode.NONE)
+    );
+
+    return contents.join("\n\n");
+  }
+
+  private buildHistoryContext(previousContext: ChatHistory) {
+    return previousContext
+      .map((message, index) => {
+        return `<message id="${index}">
+      <user>${message.userQuery}</user>
+      <assistant>${message.chatResponse}</assistant>
+    </message>`;
+      })
+      .join("\n");
   }
 
   /**
@@ -161,12 +173,7 @@ Your Response based *only* on the provided document excerpts:
 
     if (contextParts.length === 0) return "";
 
-    return `
-<query analysis>
-The following comprehensive analysis has been performed on the user's query:
-${contextParts.join("\n")}
-</query analysis>
-`;
+    return contextParts.join("\n");
   }
 
   /**

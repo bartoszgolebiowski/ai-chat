@@ -1,8 +1,8 @@
 import { ConfluenceNewRetrievalStrategy } from "@/lib/llm/rag/confluence/retrival/confluence-new-retrival-strategy";
-import { confluenceRagRetrivalFacade } from "../confluence-rag-retrival-facade.client";
+import { confluenceRagRetrival } from "../confluence-rag-retrival.client";
 import { confluenceReranker } from "../reranker/confluence-reranker.client";
 
 export const confluenceNewSearchRetrival = new ConfluenceNewRetrievalStrategy(
-  confluenceRagRetrivalFacade,
+  confluenceRagRetrival,
   confluenceReranker
 );

@@ -18,6 +18,10 @@ const envSchema = z.object({
   SEARCH_SERVICE_API_VERSION: z.string(),
   SEARCH_SERVICE_INDEX_NAME_CONFLUENCE: z.string(),
   SEARCH_SERVICE_INDEX_NAME_PDF: z.string(),
+
+  COHERE_SERVICE_API_KEY: z.string(),
+  COHERE_SERVICE_ENDPOINT: z.string(),
+  COHERE_SERVICE_MODEL: z.string(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

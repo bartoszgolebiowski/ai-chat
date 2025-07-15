@@ -1,5 +1,6 @@
 import { vectorStoreIndexPDFClient } from "@/lib/clients/vector-store-index.client";
 import { cohereReranker } from "@/lib/llm/rag/pdf2/base-node-processor/cohere-reranker";
+import { similarityPostprocessor } from "@/lib/llm/rag/pdf2/base-node-processor/similarity";
 import {
   convertMessagesToChatHistory,
   createChatEngine,
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
 
   const queryEngine = createQueryEngine(index, retriever, {
     mode,
-    nodePostprocessors: [cohereReranker],
+    nodePostprocessors: [cohereReranker, similarityPostprocessor],
   });
 
   const chatEngine = createChatEngine(

@@ -34,7 +34,7 @@ export default function Page() {
     updateResponseTime,
   } = useResponseSpinner();
 
-  const { messages, input, error, handleInputChange, handleSubmit, reload, isLoading } =
+  const { messages, input, error, handleInputChange, handleSubmit, reload, isLoading, setMessages } =
     useChat({
       api: "/api/chat/pdf2",
       body: {
@@ -52,6 +52,11 @@ export default function Page() {
     });
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const handleRestartConversation = () => {
+    setMessages([]);
+    resetSpinner();
+  };
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -108,6 +113,29 @@ export default function Page() {
             className="space-y-4 p-4"
             scrollButtonAlignment="center"
           >
+            {messages.length > 0 && (
+              <div className="flex justify-center mb-4">
+                <button
+                  onClick={handleRestartConversation}
+                  className="flex items-center justify-center px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 dark:text-gray-400 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg
+                    className="w-3 h-3 mr-1.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  Restart Conversation
+                </button>
+              </div>
+            )}
             {messages.map((message, index) => (
               <ChatMessage
                 key={message.id}

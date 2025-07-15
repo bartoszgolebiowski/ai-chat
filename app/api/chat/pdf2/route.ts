@@ -14,24 +14,30 @@ import { createDataStreamResponse, LlamaIndexAdapter, UIMessage } from "ai";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages, selectedNodes } = (await req.json()) as {
+  const {
+    messages,
+    selectedNodes,
+    mode = "compact",
+    similarityTopK = 20,
+  } = (await req.json()) as {
     messages: UIMessage[];
     id: string;
     selectedNodes: string[];
-    mode: "refine" | "compact" | "tree_summarize" | "multi_modal";
+    mode?: "refine" | "compact" | "tree_summarize" | "multi_modal";
+    similarityTopK?: number;
   };
 
   const index = await vectorStoreIndexPDFClient;
   const retriever = createRetriever(
     index,
-    20,
+    similarityTopK,
     createFilenameFilters(
       selectedNodes.map((node) => node.replaceAll(".md", ".pdf"))
     )
   );
 
   const queryEngine = createQueryEngine(index, retriever, {
-    mode: "compact",
+    mode,
     nodePostprocessors: [cohereReranker],
   });
 

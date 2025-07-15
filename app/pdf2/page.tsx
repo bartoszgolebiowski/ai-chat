@@ -45,8 +45,8 @@ export default function Page() {
     }
   }, [messages]);
 
-  const handleReloadFast = () => {
-    reload({
+  const handleSubmitCompact = () => {
+    handleSubmit(undefined, {
       body: {
         selectedNodes,
         mode: "compact", // or 'tree_summarize', 'multi_modal' as needed
@@ -54,8 +54,8 @@ export default function Page() {
     });
   };
 
-  const handleReloadQuality = () => {
-    reload({
+  const handleSubmitRefine = () => {
+    handleSubmit(undefined, {
       body: {
         selectedNodes,
         mode: "refine", // or 'tree_summarize', 'multi_modal' as needed
@@ -117,48 +117,7 @@ export default function Page() {
                             </svg>
                             Generate Again
                           </button>
-                        ) : (
-                          <>
-                            <button
-                              onClick={handleReloadFast}
-                              className="flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-900/20 dark:border-blue-800 dark:hover:bg-blue-900/40 transition-colors"
-                            >
-                              <svg
-                                className="w-4 h-4 mr-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                                />
-                              </svg>
-                              Fast Mode
-                            </button>
-                            <button
-                              onClick={handleReloadQuality}
-                              className="flex items-center justify-center px-4 py-2 text-sm font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-md hover:bg-purple-100 dark:text-purple-400 dark:bg-purple-900/20 dark:border-purple-800 dark:hover:bg-purple-900/40 transition-colors"
-                            >
-                              <svg
-                                className="w-4 h-4 mr-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                                />
-                              </svg>
-                              Quality Mode
-                            </button>
-                          </>
-                        )}
+                        ) : null}
                       </div>
                     )}
                 </ChatMessageContent>
@@ -176,7 +135,10 @@ export default function Page() {
           className="absolute bottom-4 left-4 right-14 bg-white dark:bg-gray-800"
         >
           <ChatInputTextArea placeholder="Type a message..." />
-          <ChatInputSubmit />
+          <div className="flex items-center justify-end space-x-2 mt-2">
+            <ChatInputSubmit mode="compact" onSubmit={handleSubmitCompact} />
+            <ChatInputSubmit mode="refine" onSubmit={handleSubmitRefine} />
+          </div>
         </ChatInput>
       </div>
     </div>

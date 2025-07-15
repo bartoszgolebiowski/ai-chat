@@ -2,9 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { useTextareaResize } from "@/hooks/use-textarea-resize";
-import { ArrowUpIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ArrowUpIcon, Brain, Rabbit } from "lucide-react";
 import type React from "react";
 import { createContext, useContext } from "react";
 
@@ -125,16 +125,20 @@ function ChatInputTextArea({
 
 ChatInputTextArea.displayName = "ChatInputTextArea";
 
+type ChatInputSubmitMode = "compact" | "refine";
+
 interface ChatInputSubmitProps extends React.ComponentProps<typeof Button> {
 	onSubmit?: () => void;
 	loading?: boolean;
 	onStop?: () => void;
+	mode?: ChatInputSubmitMode;
 }
 
 function ChatInputSubmit({
 	onSubmit: onSubmitProp,
 	loading: loadingProp,
 	onStop: onStopProp,
+	mode = "compact",
 	className,
 	...props
 }: ChatInputSubmitProps) {
@@ -175,6 +179,17 @@ function ChatInputSubmit({
 	const isDisabled =
 		typeof context.value !== "string" || context.value.trim().length === 0;
 
+	const getIcon = () => {
+		switch (mode) {
+			case "compact":
+				return <Rabbit />
+			case "refine":
+				return <Brain />
+			default:
+				return <ArrowUpIcon />;
+		}
+	};
+
 	return (
 		<Button
 			className={cn(
@@ -190,11 +205,12 @@ function ChatInputSubmit({
 			}}
 			{...props}
 		>
-			<ArrowUpIcon />
+			{getIcon()}
 		</Button>
 	);
 }
 
 ChatInputSubmit.displayName = "ChatInputSubmit";
 
-export { ChatInput, ChatInputTextArea, ChatInputSubmit };
+export { ChatInput, ChatInputSubmit, ChatInputTextArea };
+

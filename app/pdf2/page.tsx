@@ -13,7 +13,9 @@ import {
   ChatMessageContent,
 } from "@/components/ui/chat-message";
 import { ChatMessageArea } from "@/components/ui/chat-message-area";
+import { ResponseSpinner } from "@/components/ui/response-spinner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useResponseSpinner } from "@/hooks/use-response-spinner";
 import { pdfTree } from "@/lib/tree/tree-converter";
 import { useChat } from "@ai-sdk/react";
 import { useEffect, useRef } from "react";
@@ -23,12 +25,29 @@ export default function Page() {
     pdfTree,
   ]);
 
-  const { messages, input, error, handleInputChange, handleSubmit, reload } =
+  const {
+    hasStartedReceiving,
+    responseTime,
+    markResponseStarted,
+    markResponseFinished,
+    resetSpinner,
+    updateResponseTime,
+  } = useResponseSpinner();
+
+  const { messages, input, error, handleInputChange, handleSubmit, reload, isLoading } =
     useChat({
       api: "/api/chat/pdf2",
       body: {
         selectedNodes,
         mode: "compact",
+      },
+      onResponse: () => {
+        // Called when the first chunk arrives
+        markResponseStarted();
+      },
+      onFinish: () => {
+        // Reset state when response is complete
+        markResponseFinished();
       },
     });
 
@@ -46,6 +65,7 @@ export default function Page() {
   }, [messages]);
 
   const handleSubmitCompact = () => {
+    resetSpinner();
     handleSubmit(undefined, {
       body: {
         selectedNodes,
@@ -55,6 +75,7 @@ export default function Page() {
   };
 
   const handleSubmitRefine = () => {
+    resetSpinner();
     handleSubmit(undefined, {
       body: {
         selectedNodes,
@@ -62,6 +83,7 @@ export default function Page() {
       },
     });
   };
+
   // Scroll to bottom after submitting
   return (
     <div className="flex h-screen">
@@ -118,12 +140,23 @@ export default function Page() {
                             Generate Again
                           </button>
                         ) : null}
+                        {responseTime && hasStartedReceiving && (
+                          <div className="text-xs text-muted-foreground">
+                            First response in {responseTime < 1 ? `${Math.floor(responseTime * 1000)}ms` : `${responseTime.toFixed(1)}s`}
+                          </div>
+                        )}
                       </div>
                     )}
                 </ChatMessageContent>
                 {message.role === "user" && <ChatMessageAvatar />}
               </ChatMessage>
             ))}
+            
+            <ResponseSpinner 
+              isLoading={isLoading}
+              hasStartedReceiving={hasStartedReceiving}
+              onTimeUpdate={updateResponseTime}
+            />
           </ChatMessageArea>
         </ScrollArea>
 
@@ -132,6 +165,7 @@ export default function Page() {
           value={input}
           onChange={handleInputChange}
           onSubmit={handleSubmit}
+          loading={isLoading}
           className="absolute bottom-4 left-4 right-14 bg-white dark:bg-gray-800"
         >
           <ChatInputTextArea placeholder="Type a message..." />
